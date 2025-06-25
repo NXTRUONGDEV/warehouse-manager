@@ -1,0 +1,127 @@
+  body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .section {
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .container-fluid {
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .col-lg-4 {
+      flex: 1 1 calc(33.333% - 20px);
+      box-sizing: border-box;
+    }
+
+    .col-lg-6 {
+      flex: 1 1 50%;
+    }
+
+    .offset-lg-3 {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .section-heading {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-heading h6 {
+      font-size: 16px;
+      color: #27ae60;
+      margin-bottom: 10px;
+    }
+
+    .section-heading h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .section-heading span {
+      color: #27ae60;
+    }
+
+    .section-heading em {
+      color: #2980b9;
+      font-style: italic;
+    }
+
+    .main-green-button a {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #27ae60;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .main-green-button a:hover {
+      background-color: #219150;
+    }
+
+    .service-item {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      height: 100%;
+    }
+
+    .icon img {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    .right-content h4 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    .right-content p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+
+    @media (max-width: 992px) {
+      .col-lg-4 {
+        flex: 1 1 calc(50% - 20px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .col-lg-4, .col-lg-6 {
+        flex: 1 1 100%;
+      }
+
+      .service-item {
+        flex-direction: row;
+      }
+    }
