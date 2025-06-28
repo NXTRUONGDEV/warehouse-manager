@@ -1,11 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  userName: string = '';
+  isLoggedIn: boolean = false;
 
+  ngOnInit() {
+    const nameFromStorage = sessionStorage.getItem('name');
+    this.userName = nameFromStorage ? nameFromStorage : 'Người dùng'; // 👈 fallback nếu null
+    this.isLoggedIn = !!sessionStorage.getItem('token');
+  }
+
+  logout() {
+    sessionStorage.clear();
+    window.location.href = '/';
+  }
 }

@@ -1,29 +1,33 @@
 /*Nội dung*/
 
 .main-banner {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .features {
-     margin-left: 10%;
+     margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .about-us {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .our-services {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .our-portfolio {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .contact-us {
-    padding-left: 5%;
+    padding: 5%;
     border-radius: 100px;
-    margin: 5%;
 }
 
 .service-item {

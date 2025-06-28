@@ -12,9 +12,13 @@ import { MuahangComponent } from './pages/muahang/muahang.component';
 import { DichvuComponent } from './pages/dichvu/dichvu.component';
 import { HoadonComponent } from './pages/hoadon/hoadon.component';
 import { DangnhapComponent } from './pages/dangnhap/dangnhap.component';
+import { TrangcanhanComponent } from './pages/trangcanhan/trangcanhan.component';
 
 // Admin Pages
 import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { AccountManagerComponent } from './admin/account-manager/account-manager.component';
+
+
 
 // Staff Pages
 import { ThongtinComponent } from './staff/thongtin/thongtin.component';
@@ -29,6 +33,7 @@ export const routes: Routes = [
   { path: 'dichvu', component: DichvuComponent },
   { path: 'hoadon', component: HoadonComponent },
   { path: 'dangnhap', component: DangnhapComponent },
+  { path: 'trangcanhan', component: TrangcanhanComponent },
 
   // Layout Staff
   {
@@ -46,6 +51,7 @@ export const routes: Routes = [
     component: AdminLayoutComponent,
     children: [
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'account-manager', component: AccountManagerComponent },
       // thêm các route admin khác
     ]
   },

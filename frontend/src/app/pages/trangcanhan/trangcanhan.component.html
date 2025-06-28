@@ -1,0 +1,65 @@
+<body style="background-color: beige;">
+
+  <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+            <div class="profile-container">
+            <h3 class="title">👤 Trang cá nhân</h3>
+
+            <div class="profile-card shadow-lg">
+                <div class="profile-left">
+                <img [src]="userInfo?.image_url || 'assets/img/default-avatar.png'" alt="avatar" class="avatar-img">
+                <button class="btn btn-update mt-3" (click)="showForm = !showForm">
+                    ✏️ {{ showForm ? 'Đóng' : 'Cập nhật thông tin' }}
+                </button>
+                </div>
+
+                <div class="profile-right">
+                <p><strong>Họ tên:</strong> {{ userInfo?.full_name || 'Chưa có' }}</p>
+                <p><strong>Ngày sinh:</strong> {{ userInfo?.date_of_birth || 'Chưa có' }}</p>
+                <p><strong>Giới tính:</strong> {{ userInfo?.gender || 'Chưa có' }}</p>
+                <p><strong>Địa chỉ:</strong> {{ userInfo?.address || 'Chưa có' }}</p>
+                <p><strong>SĐT:</strong> {{ userInfo?.phone || 'Chưa có' }}</p>
+                </div>
+            </div>
+
+            <form *ngIf="showForm" class="form-card shadow-sm mt-4" (ngSubmit)="submitInfo()" #form="ngForm">
+                <h5>📥 Nhập hoặc cập nhật thông tin</h5>
+                <div class="form-group">
+                <label>Họ tên</label>
+                <input [(ngModel)]="formData.full_name" name="full_name" class="form-control" placeholder="Nguyễn Văn A">
+                </div>
+                <div class="form-group">
+                <label>Ngày sinh</label>
+                <!-- Ngăn không cho ngày sinh chọn sau hôm nay -->
+                <input type="date" [(ngModel)]="formData.date_of_birth" name="dob" class="form-control" [max]="today">
+                </div>
+                <div class="form-group">
+                <label>Giới tính</label>
+                <select [(ngModel)]="formData.gender" name="gender" class="form-control">
+                    <option value="">-- Chọn giới tính --</option>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                </select>
+                </div>
+                <div class="form-group">
+                <label>Địa chỉ</label>
+                <input [(ngModel)]="formData.address" name="address" class="form-control" placeholder="123 Đường ABC, Quận X">
+                </div>
+                <div class="form-group">
+                <label>Số điện thoại</label>
+                <input [(ngModel)]="formData.phone" name="phone" class="form-control" placeholder="0987654321">
+                </div>
+                <div class="form-group">
+                <label>Ảnh đại diện</label>
+                <input type="file" (change)="onFileSelected($event)" class="form-control">
+                </div>
+                <button class="btn btn-primary w-100 mt-3" type="submit">💾 Lưu thông tin</button>
+            </form>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>

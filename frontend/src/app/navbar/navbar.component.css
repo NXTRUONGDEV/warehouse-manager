@@ -126,3 +126,41 @@
     opacity: 1;
   }
 }
+
+/*đăng nhập thành công có tên*/
+.nav-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dropdown-menu {
+  background-color: rgb(12, 91, 127);
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  min-width: 160px;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 1000;
+}
+
+/* Từng mục trong dropdown */
+.dropdown-item {
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  display: block;
+  font-size: 15px;
+  transition: background-color 0.3s, color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #000;
+  cursor: pointer;
+}
+
+/* Divider (kẻ ngang) */
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border-top: 1px solid #eee;
+}

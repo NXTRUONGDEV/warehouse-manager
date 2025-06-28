@@ -5,10 +5,11 @@
       <div class="col-12">
         <nav class="main-nav">
           <!-- ***** Logo Start ***** -->
-          <a href="#" class="logo">
-            <!-- Logo tại đây nếu có -->
+          <a href="index.html" class="logo">
+            <img src="../../assets/img/logogpt.png" alt="Logo Kho Hàng" style="height: 75px; width: 100%;">
           </a>
           <!-- ***** Logo End ***** -->
+
 
           <!-- ***** Menu Start ***** -->
           <ul class="nav">
@@ -26,11 +27,26 @@
             </li>
 
             <!-- Nút đăng nhập -->
-            <li class="scroll-to-section">
+            <!-- Nếu chưa đăng nhập -->
+            <li class="scroll-to-section" *ngIf="!isLoggedIn">  
               <div class="main-blue-button">
                 <a href="/dangnhap">Đăng ký / Đăng nhập</a>
               </div>
-            </li> 
+            </li>
+
+            <!-- Nếu đã đăng nhập -->
+            <li class="nav-item dropdown"  *ngIf="isLoggedIn">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                👋 Hello, {{ userName }}
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="/trangcanhan">Trang cá nhân</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" (click)="logout()">Đăng xuất</a></li>
+              </ul>
+            </li>
+
           </ul>        
 
           <a class='menu-trigger'>
