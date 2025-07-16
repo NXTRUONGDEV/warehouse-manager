@@ -253,286 +253,205 @@
 
 
   <!-- Mua hàng -->
-  <div id="muahang" class="our-portfolio section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-5">
-          <div class="section-heading wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.3s">
-            <h6>Sản phẩm</h6>
-            <h2>Danh mục <em>sản phẩm mẫu</em> <span> hiện có</span></h2>
-            <a href="/muahang" class="buy-btn" style="text-align: right;">Mua ngay</a>
-          </div>
+  <!-- Mua hàng -->
+<div id="muahang" class="our-portfolio section">
+  <div class="container">
+    <!-- Tiêu đề + nút điều hướng cùng hàng -->
+    <div class="row align-items-center mb-3">
+      <div class="col-lg-8">
+        <div class="section-heading wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.3s">
+          <h6>Sản phẩm</h6>
+          <h2>Danh mục <em>sản phẩm mẫu</em> <span> hiện có</span></h2>
         </div>
       </div>
-    </div>
-    <div class="container wow fadeIn" data-wow-duration="1s" data-wow-delay="0.7s">
-      <div class="row">
-
-        <!-- Card sản phẩm 1 -->
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="product-card">
-            <div class="product-image">
-              <img src="https://source.unsplash.com/300x200/?box,product" alt="Product 1">
-            </div>
-            <div class="product-info">
-              <h5 class="product-title">Thùng Carton</h5>
-              <p class="product-desc">Thùng carton chất lượng cao dùng trong đóng gói hàng hóa.</p>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Card sản phẩm 2 -->
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="product-card">
-            <div class="product-image">
-              <img src="https://source.unsplash.com/300x200/?box,product" alt="Product 1">
-            </div>
-            <div class="product-info">
-              <h5 class="product-title">Thùng Carton</h5>
-              <p class="product-desc">Thùng carton chất lượng cao dùng trong đóng gói hàng hóa.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card sản phẩm 3 -->
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="product-card">
-            <div class="product-image">
-              <img src="https://source.unsplash.com/300x200/?box,product" alt="Product 1">
-            </div>
-            <div class="product-info">
-              <h5 class="product-title">Thùng Carton</h5>
-              <p class="product-desc">Thùng carton chất lượng cao dùng trong đóng gói hàng hóa.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card sản phẩm 4 -->
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="product-card">
-            <div class="product-image">
-              <img src="https://source.unsplash.com/300x200/?box,product" alt="Product 1">
-            </div>
-            <div class="product-info">
-              <h5 class="product-title">Thùng Carton</h5>
-              <p class="product-desc">Thùng carton chất lượng cao dùng trong đóng gói hàng hóa.</p>
-            </div>
-          </div>
-        </div>
-
+      <div class="col-lg-4 d-flex justify-content-end align-items-center">
+        <a href="/muahang" class="buy-btn ms-3">Mua ngay</a>
       </div>
     </div>
   </div>
 
-
-  <div id="services" class="our-services section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 offset-lg-3">
-          <div class="section-heading wow bounceIn" data-wow-duration="1s" data-wow-delay="0.2s">
-            <h6>Dịch vụ & Tính năng</h6>
-            <h2>Khám phá những gì hệ thống <span>cung cấp</span> cho <em>quản lý kho hàng</em></h2>
-            <br>
-            <div class="main-green-button">
-              <a href="/dichvu">Xem dịch vụ kho hàng</a>
-            </div>
+  <!-- Swiper slider -->
+<div class="container wow fadeIn" data-wow-duration="1s" data-wow-delay="0.5s">
+  <div class="swiper-container position-relative">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide" *ngFor="let sp of sanPhamList">
+        <div class="product-card shadow">
+          <div class="product-image">
+            <img [src]="sp.image_url || '/assets/images/no-image.jpg'" alt="{{ sp.product_name }}" />
+            <img class="supplier-logo" *ngIf="sp.logo_url" [src]="sp.logo_url" alt="Logo" />
+          </div>
+          <div class="product-info">
+            <h5 class="product-title">{{ sp.product_name }}</h5>
+            <p class="product-meta">
+              <strong>Mã:</strong> {{ sp.product_code }} |
+              <strong>ĐVT:</strong> {{ sp.unit || '...' }}
+            </p>
+            <p class="product-desc">
+              {{ sp.product_type }} | {{ sp.ten_khu_vuc || 'Khu chưa phân' }}
+            </p>
+            <p class="product-detail">
+              <strong>Vị trí:</strong> {{ sp.location || 'N/A' }}<br />
+              <strong>NSX:</strong> {{ sp.manufacture_date || '...' }}<br />
+              <strong>HSD:</strong> {{ sp.expiry_date || '...' }}
+            </p>
+            <p class="product-price">
+              {{ sp.unit_price | number:'1.0-0' }} đ
+              <span class="text-muted">({{ sp.quantity }} {{ sp.unit || '' }})</span>
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.3s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Quản lý hàng hóa">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Quản lý hàng hóa</h4>
-                  <p>Theo dõi số lượng, vị trí lưu trữ, hạn sử dụng, và tình trạng tồn kho của sản phẩm.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.4s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Quản lý nhập xuất">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Quản lý nhập/xuất kho</h4>
-                  <p>Tạo phiếu nhập, xuất, và điều chuyển hàng giữa các kho một cách nhanh chóng và chính xác.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.5s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Quản lý nhà cung cấp">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Nhà cung cấp & Khách hàng</h4>
-                  <p>Quản lý thông tin nhà cung cấp và khách hàng, lịch sử giao dịch và công nợ liên quan.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.6s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Thống kê báo cáo">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Báo cáo kho</h4>
-                  <p>Xuất báo cáo tồn kho, lịch sử giao dịch, hàng sắp hết hạn, hỗ trợ ra quyết định nhanh chóng.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.7s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Phân quyền người dùng">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Phân quyền người dùng</h4>
-                  <p>Phân quyền theo vai trò như quản lý kho, nhân viên nhập xuất, khách hàng và nhà cung cấp.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.8s">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="icon">
-                  <img src="assets/images/about-left-image.png" alt="Thông báo tự động">
-                </div>
-              </div>
-              <div class="col-lg-8">
-                <div class="right-content">
-                  <h4>Thông báo tự động</h4>
-                  <p>Gửi cảnh báo khi hàng tồn thấp, quá hạn hoặc đơn hàng mới được tạo trong hệ thống.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <!-- ✅ Đặt ngoài swiper-wrapper, nhưng vẫn trong swiper-container -->
+      <div class="swiper-button-prev custom-nav"></div>
+      <div class="swiper-button-next custom-nav"></div>
     </div>
   </div>
 
-  <div id="dangnhap" class="contact-us section bg-light py-5">
-    <div class="container">
-      <div class="row justify-content-center wow fadeInUp" data-wow-duration="0.5s" data-wow-delay="0.25s">
-        <div class="col-lg-6">
-          <div class="auth-box bg-white p-5 rounded shadow">
-            <div class="text-center mb-4">
-              <h4 class="mb-1">Chào mừng đến với <span class="text-primary">SmartWarehouse</span></h4>
-              <p>Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục.</p>
-            </div>
+</div>
 
-            <!-- Tabs -->
-            <ul class="nav nav-tabs mb-4 justify-content-center" id="authTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">Đăng nhập</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">Đăng ký</button>
-              </li>
-            </ul>
 
-            <!-- Tab content -->
-            <div class="tab-content" id="authTabsContent">
-
-              <!-- Login Form -->
-              <div class="tab-pane fade show active" id="login" role="tabpanel">
-                <form>
-                  <div class="mb-3">
-                    <label for="login-email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="login-email" placeholder="Nhập email" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="login-password" class="form-label">Mật khẩu</label>
-                    <input type="password" class="form-control" id="login-password" placeholder="Nhập mật khẩu" required>
-                  </div>
-                  <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Register Form -->
-              <div class="tab-pane fade" id="register" role="tabpanel">
-                <form>
-                  <div class="mb-3">
-                    <label for="reg-name" class="form-label">Họ và tên</label>
-                    <input type="text" class="form-control" id="reg-name" placeholder="Nhập họ tên" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="reg-email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="reg-email" placeholder="Nhập email" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="reg-password" class="form-label">Mật khẩu</label>
-                    <input type="password" class="form-control" id="reg-password" placeholder="Tạo mật khẩu" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="reg-confirm" class="form-label">Xác nhận mật khẩu</label>
-                    <input type="password" class="form-control" id="reg-confirm" placeholder="Nhập lại mật khẩu" required>
-                  </div>
-                  <div class="d-grid">
-                    <button type="submit" class="btn btn-success">Tạo tài khoản</button>
-                  </div>
-                </form>
-              </div>
-
-            </div>
+  <!-- dịch vụ -->
+  <div id="services" class="our-services section"> 
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6 offset-lg-3">
+        <div class="section-heading wow bounceIn" data-wow-duration="1s" data-wow-delay="0.2s">
+          <h6>Dịch vụ & Tính năng</h6>
+          <h2>Khám phá những gì hệ thống <span>cung cấp</span> cho <em>quản lý kho hàng</em></h2>
+          <br>
+          <div class="main-green-button">
+            <a href="/dichvu">Xem dịch vụ kho hàng</a>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- 1. Quản lý hàng hóa -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.3s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-success text-center">
+                <i class="fas fa-box fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Quản lý hàng hóa</h4>
+                <p>Theo dõi số lượng, vị trí lưu trữ, hạn sử dụng, và tình trạng tồn kho của sản phẩm.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Quản lý nhập/xuất -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.4s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-primary text-center">
+                <i class="fas fa-exchange-alt fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Quản lý nhập/xuất kho</h4>
+                <p>Tạo phiếu nhập, xuất, và điều chuyển hàng giữa các kho một cách nhanh chóng và chính xác.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Nhà cung cấp & Khách hàng -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.5s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-warning text-center">
+                <i class="fas fa-handshake fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Nhà cung cấp & Khách hàng</h4>
+                <p>Quản lý thông tin nhà cung cấp và khách hàng, lịch sử giao dịch và công nợ liên quan.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Báo cáo kho -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.6s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-danger text-center">
+                <i class="fas fa-chart-line fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Báo cáo kho</h4>
+                <p>Xuất báo cáo tồn kho, lịch sử giao dịch, hàng sắp hết hạn, hỗ trợ ra quyết định nhanh chóng.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Phân quyền người dùng -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.7s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-info text-center">
+                <i class="fas fa-user-shield fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Phân quyền người dùng</h4>
+                <p>Phân quyền theo vai trò như quản lý kho, nhân viên nhập xuất, khách hàng và nhà cung cấp.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Thông báo tự động -->
+      <div class="col-lg-4">
+        <div class="service-item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.8s">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="icon text-secondary text-center">
+                <i class="fas fa-bell fa-3x"></i>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="right-content">
+                <h4>Thông báo tự động</h4>
+                <p>Gửi cảnh báo khi hàng tồn thấp, quá hạn hoặc đơn hàng mới được tạo trong hệ thống.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
   <br>
-
-
-  <!-- Scripts -->
-
 
 </body>
 </html>

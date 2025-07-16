@@ -1,29 +1,33 @@
 /*Nội dung*/
 
 .main-banner {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .features {
-     margin-left: 10%;
+     margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .about-us {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .our-services {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .our-portfolio {
-    margin-left: 10%;
+    margin-left: 5%;
+    margin-bottom: 5%;
 }
 
 .contact-us {
-    padding-left: 5%;
+    padding: 5%;
     border-radius: 100px;
-    margin: 5%;
 }
 
 .service-item {
@@ -116,3 +120,99 @@
   background: linear-gradient(135deg, #0072ff, #00c6ff);
   box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
 }
+
+.product-card {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s;
+  position: relative;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-image .supplier-logo {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #fff;
+  object-fit: cover;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.product-info {
+  padding: 15px;
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.product-meta,
+.product-desc,
+.product-detail {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.product-price {
+  font-size: 16px;
+  font-weight: bold;
+  color: #E91E63;
+  margin-top: 8px;
+}
+
+.text-muted {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Swiper buttons */
+.custom-nav {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0,0,0,0.5);
+  color: #fff;
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 40%;
+}
+
+.swiper-button-prev.custom-nav {
+  left: -10px;
+}
+
+.swiper-button-next.custom-nav {
+  right: -10px;
+}
+

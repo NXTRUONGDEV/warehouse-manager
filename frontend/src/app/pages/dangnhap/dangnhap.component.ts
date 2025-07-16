@@ -12,6 +12,11 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./dangnhap.component.css']
 })
 export class DangnhapComponent {
+  showRegisterPassword = false;
+  showRegisterConfirm = false;
+  showLoginPassword = false;
+
+
   activeTab: 'login' | 'register' = 'login';
 
   // Dữ liệu form đăng nhập
@@ -26,44 +31,66 @@ export class DangnhapComponent {
     this.activeTab = tab;
   }
 
-  login() {
-    this.http.post<{ token: string; role: string }>('http://localhost:3000/api/login', this.loginData).subscribe({
-      next: (res) => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('role', res.role);
+login() {
+  this.http.post<{ token: string; role: string; name: string; email: string; id: number }>(
+    'http://localhost:3000/api/login',
+    this.loginData
+  ).subscribe({
+    next: (res) => {
+      sessionStorage.setItem('token', res.token);
+      sessionStorage.setItem('role', res.role);
+      sessionStorage.setItem('name', res.name);
+      sessionStorage.setItem('email', res.email);
+      sessionStorage.setItem('id', res.id.toString());
 
-        // Điều hướng theo role
-        if (res.role === 'admin') this.router.navigate(['/admin/dashboard']);
-        else if (res.role === 'staff') this.router.navigate(['/staff/thongtin']);
-        else this.router.navigate(['/home']);
-      },
-      error: () => alert('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.')
-    });
-  }
-
-  register() {
-    if (this.registerData.password !== this.registerData.confirm) {
-      alert('Mật khẩu xác nhận không khớp!');
-      return;
-    }
-
-    // Gửi lên backend chỉ các trường cần thiết
-    const payload = {
-      name: this.registerData.name,
-      email: this.registerData.email,
-      password: this.registerData.password
-    };
-
-    this.http.post('http://localhost:3000/api/register', payload).subscribe({
-      next: () => {
-        alert('Đăng ký thành công! Vui lòng đăng nhập.');
-        this.setTab('login');
-        this.registerData = { name: '', email: '', password: '', confirm: '' }; // reset form
-      },
-      error: (err) => {
-        // Có thể customize theo lỗi backend trả về
-        alert(err.error?.message || 'Đăng ký thất bại! Email có thể đã tồn tại.');
+     if (res.role === 'admin') {
+        this.router.navigate(['/admin/dashboard']);
+      } else {
+        this.router.navigate(['/home']).then(() => window.location.reload());
       }
-    });
+    },
+    error: () => alert('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.')
+  });
+}
+
+
+ register() {
+  const { name, email, password, confirm } = this.registerData;
+
+  if (password !== confirm) {
+    alert('❌ Mật khẩu xác nhận không khớp!');
+    return;
   }
+
+  // ✅ Kiểm tra mật khẩu có ít nhất 3 chữ cái và 3 chữ số
+  const hasThreeLetters = (password.match(/[a-zA-Z]/g) || []).length >= 3;
+  const hasThreeDigits = (password.match(/[0-9]/g) || []).length >= 3;
+
+  if (!hasThreeLetters || !hasThreeDigits) {
+    alert('⚠️ Mật khẩu phải chứa ít nhất 3 chữ cái và 3 chữ số!');
+    return;
+  }
+
+  // ✅ Kiểm tra họ tên hợp lệ
+  const namePattern = /^[A-Za-zÀ-ỹ\s]{2,50}$/; // Họ tên dài 2-50 ký tự, không số, không ký tự lạ
+
+  if (!namePattern.test(name)) {
+    alert('⚠️ Họ và tên phải là chữ cái, không chứa số hoặc ký tự đặc biệt, và ít nhất 2 ký tự!');
+    return;
+  }
+
+  const payload = { name, email, password };
+
+  this.http.post('http://localhost:3000/api/register', payload).subscribe({
+    next: () => {
+      alert('✅ Đăng ký thành công! Vui lòng đăng nhập.');
+      this.setTab('login');
+      this.registerData = { name: '', email: '', password: '', confirm: '' };
+    },
+    error: (err) => {
+      alert(err.error?.message || '❌ Đăng ký thất bại! Email có thể đã tồn tại.');
+    }
+  });
+}
+
 }
