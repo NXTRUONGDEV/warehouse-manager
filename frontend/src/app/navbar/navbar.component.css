@@ -1,14 +1,14 @@
 /* Header Styles */
 .header-area {
   position: fixed;
+  top: 0;
   width: 100%;
   z-index: 999;
-  background-color:rgb(27, 167, 167);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 8px 32px 0 rgba(28, 40, 204, 0.37);
+  background-color: #1ba7a7;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  transition: all 0.4s ease-in-out;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .header-sticky {
@@ -20,7 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 0;
+  padding: 12px 0;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -31,10 +32,11 @@
 }
 
 .nav {
-  list-style: none;
   display: flex;
-  gap: 25px;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
+  list-style: none;
   margin: 0;
   padding: 0;
 }
@@ -47,9 +49,10 @@
   text-decoration: none;
   font-weight: 500;
   color: #ffffff;
-  padding: 10px 15px;
+  padding: 10px 5px 10px 10px ;
   border-radius: 12px;
   transition: all 0.3s ease-in-out;
+  margin-left: 5px ;
 }
 
 .nav a:hover,
@@ -125,4 +128,55 @@
     transform: translateY(0%);
     opacity: 1;
   }
+}
+
+/*đăng nhập thành công có tên*/
+.nav-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dropdown-menu {
+  background-color: rgb(12, 91, 127);
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  min-width: 160px;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 1000;
+}
+
+/* Từng mục trong dropdown */
+.dropdown-item {
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  display: block;
+  font-size: 15px;
+  transition: background-color 0.3s, color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #000;
+  cursor: pointer;
+}
+
+/* Divider (kẻ ngang) */
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border-top: 1px solid #eee;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -15px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  z-index: 10;
 }

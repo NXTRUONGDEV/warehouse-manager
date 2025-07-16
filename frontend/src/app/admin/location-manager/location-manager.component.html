@@ -1,0 +1,52 @@
+
+
+ <div class="main-panel">
+
+  <h2> Quản lý vị trí khu vực kho</h2>
+
+    <div class="location-container">
+
+    <!-- Bộ lọc khu vực -->
+    <div class="filter-bar">
+        <label for="areaSelect">Chọn khu vực:</label>
+        <select id="areaSelect" [(ngModel)]="selectedAreaIndex" (change)="onAreaChange(selectedAreaIndex)">
+        <option *ngFor="let area of areas; index as i" [value]="i">
+            {{ area.ten_khu_vuc }}
+        </option>
+        </select>
+
+    </div>
+
+    <!-- Thống kê -->
+    <div class="stats">
+        <p>🧮 <strong>Tổng sức chứa toàn kho:</strong> {{ totalWeight }} kg | {{ totalArea }} m²</p>
+        <p>📍 <strong>Sức chứa khu {{ selectedArea.name }}:</strong> {{ currentWeightUsed | number:'1.0-0' }} kg | {{ currentAreaUsed | number:'1.1-1' }} m²</p>
+    </div>
+
+    <!-- Danh sách pallet -->
+    <div class="warehouse-map">
+    <div class="path-label">🚪 Cửa ra vào</div>
+
+    <div *ngFor="let row of palletGrid; let i = index" class="pallet-row">
+        <!-- Lối đi bên trái có số thứ tự -->
+        <div class="aisle-cell range-label">
+        {{ i * 10 + 1 }}–{{ (i + 1) * 10 }}
+        </div>
+
+        <!-- Các pallet -->
+        <div *ngFor="let pallet of row"
+            class="pallet-box"
+            [title]="'KL: ' + pallet.weightUsed + 'kg | DT: ' + pallet.areaUsed.toFixed(1) + 'm²'"
+            [ngClass]="{
+            'pallet-empty': pallet.weightUsed === 0,
+            'pallet-used': pallet.weightUsed > 0 && pallet.weightUsed < 500,
+            'pallet-full': pallet.weightUsed >= 500
+            }">
+        {{ pallet.name }}
+        </div>
+        &nbsp;
+    </div>
+    </div>
+
+
+</div>

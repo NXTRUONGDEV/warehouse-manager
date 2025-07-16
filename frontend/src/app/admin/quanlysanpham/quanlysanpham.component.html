@@ -1,0 +1,292 @@
+<div class="main-panel">
+
+  <h2>Quản lý sản phẩm</h2>
+
+  <!-- Bộ lọc nâng cao -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Khu vực:</label>
+      <select [(ngModel)]="selectedKhuVuc" (change)="onKhuVucChange()">
+      <option value="">Tất cả khu</option>
+      <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Tìm kiếm:</label>
+      <input type="text" [(ngModel)]="keyword" placeholder="🔍 Mã hoặc tên sản phẩm" />
+    </div>
+
+    <div class="filter-group">
+      <label>Loại hàng:</label>
+      <select [(ngModel)]="selectedType">
+      <option value="">Tất cả loại</option>
+      <option *ngFor="let type of loaiHang" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>📅 Ngày nhập:</label>
+      <input id="fromDate" type="date" [(ngModel)]="fromDate" />
+    </div>
+
+    <div class="filter-group">
+      <label>⏳ Hạn sử dụng:</label>
+      <input id="toDate" type="date" [(ngModel)]="toDate" />
+    </div>
+
+    <div class="filter-group">
+    <label>💰 Giá từ:</label>
+    <input type="number" [(ngModel)]="minPrice" placeholder="Min" />
+  </div>
+
+  <div class="filter-group">
+    <label>💰 đến:</label>
+    <input type="number" [(ngModel)]="maxPrice" placeholder="Max" />
+  </div>
+
+    <div class="filter-group full">
+      <button (click)="layDanhSachSanPham()">🔍 Lọc sản phẩm</button>
+    </div>
+  </div>
+
+ <!-- Nút Thêm sản phẩm nằm sát góc phải -->
+    <div class="them-moi-wrapper">
+      <button class="btn-them-sp" (click)="hienPopupThem = true">➕ Thêm sản phẩm</button>
+    </div>
+
+    <!-- Popup thêm sản phẩm -->
+    <!-- Popup thêm sản phẩm -->
+    <div class="popup-overlay" *ngIf="hienPopupThem" (click)="hienPopupThem = false"> </div>
+    <div class="popup" *ngIf="hienPopupThem">
+      <h3>➕ Nhập sản phẩm mới</h3>
+      <button class="close-btn" (click)="hienPopupThem = false">✖</button>
+
+      <form (submit)="themSanPham()">
+        <div class="form-grid">
+          <label>Mã sản phẩm:</label>
+          <input [(ngModel)]="spMoi.product_code" name="ma" required />
+
+          <label>Tên sản phẩm:</label>
+          <input [(ngModel)]="spMoi.product_name" name="ten" required />
+
+          <label>Loại hàng:</label>
+          <input [(ngModel)]="spMoi.product_type" name="loai" required />
+
+          <label>Đơn vị:</label>
+          <input [(ngModel)]="spMoi.unit" name="donvi" />
+
+          <label>Số lượng:</label>
+          <input type="number" [(ngModel)]="spMoi.quantity" name="soluong" />
+
+          <label>Khối lượng:</label>
+          <input type="number" [(ngModel)]="spMoi.weight" name="kl" />
+
+          <label>Diện tích:</label>
+          <input type="number" [(ngModel)]="spMoi.area" name="dt" />
+
+          <label>Ngày sản xuất:</label>
+          <input type="date" [(ngModel)]="spMoi.manufacture_date" name="nsx" />
+
+          <label>Hạn sử dụng:</label>
+          <input type="date" [(ngModel)]="spMoi.expiry_date" name="hsd" />
+
+          <label>Giá mỗi đơn vị:</label>
+          <input type="number" [(ngModel)]="spMoi.unit_price" name="gia" />
+
+          <label>Khu vực:</label>
+          <select [(ngModel)]="spMoi.khu_vuc_id" name="khuvuc">
+            <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
+          </select>
+
+         <!-- Ảnh sản phẩm -->
+        <label>Ảnh sản phẩm:</label>
+        <input type="file" (change)="chonFileAnh($event)" />
+        <img *ngIf="previewAnh" [src]="previewAnh" width="150" height="auto"
+            style="margin-top: 8px; border: 1px solid #ccc; border-radius: 8px;" />
+
+        <!-- Tên NCC -->
+        <label>Tên nhà cung cấp:</label>
+        <input [(ngModel)]="spMoi.supplier_name" name="ncc" />
+
+        <!-- Logo NCC -->
+        <label>Thay logo NCC (nếu cần):</label>
+        <input type="file" (change)="chonFileLogo($event)" />
+        <label>Logo hiện tại của NCC:</label>
+        <img *ngIf="previewLogo || spMoi.logo_url"
+            [src]="previewLogo || spMoi.logo_url"
+            width="120" height="auto"
+            style="margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px;" />
+
+        </div>
+
+        <button class="btn-luu" type="submit">📥 Lưu</button>
+      </form>
+    </div>
+
+  <!-- Bảng dữ liệu -->
+  <!-- Bảng dữ liệu -->
+    <table class="product-table">
+    <thead>
+        <tr>
+        <th>🖼️ Hình</th>
+        <th>📦 Mã sản phẩm</th>
+        <th>📝 Tên sản phẩm</th>
+        <th>📂 Loại</th>
+        <th>🔢 Tổng số lượng</th>
+        <th>⏳ Hạn sử dụng</th>
+        <th>💰 Giá</th>
+        <th>🏬 Khu vực</th>
+        <th>📅 Ngày nhập</th>
+        <th>⚙️ Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let sp of danhSachSanPham" (click)="moPopupChiTiet(sp)">
+        <td><img [src]="sp.image_url" width="50" /></td>
+
+        <!-- Chừa Mã SP: không dính sự kiện click dòng -->
+        <td (click)="$event.stopPropagation()">
+        <div class="barcode-text">{{ sp.product_code }}</div>
+        </td>
+        <td class="ellipsis">{{ sp.product_name }}</td>
+        <td>{{ sp.product_type }}</td>
+        <td>{{ sp.quantity }}</td>
+        <td>{{ sp.expiry_date | date: 'shortDate' }}</td>
+        <td>{{ sp.unit_price | number }}</td>
+        <td class="ellipsis">{{ sp.ten_khu_vuc }}</td>
+        <td>{{ sp.import_date | date: 'shortDate' }}</td>
+
+        <!-- Cột thao tác cũng chặn click -->
+        <!-- Cột thao tác hiển thị theo cột, chặn sự kiện click -->
+        <td (click)="$event.stopPropagation()" class="action-buttons column-buttons">
+        <button class="btn btn-edit" (click)="moPopupCapNhat(sp); $event.stopPropagation()">Cập nhật</button>
+        <button class="btn btn-delete" (click)="xoaSanPham(sp.id); $event.stopPropagation()">Xóa</button>
+        </td>
+
+    </tr>
+    </tbody>
+    </table>
+
+    <!-- Popup chi tiết sản phẩm -->
+    <div class="popup" *ngIf="hienPopupChiTiet">
+    <h3>📦 Chi tiết sản phẩm</h3>
+    <button class="close-btn" (click)="dongPopup()">✖</button>
+
+    <div class="popup-content">
+        <div class="left sticky-container">
+          <!-- Ảnh sản phẩm -->
+          <img [src]="sanPhamDuocChon.image_url" alt="Hình sản phẩm" />
+
+          <!-- Mã vạch lớn bên dưới -->
+          <div class="barcode-wrapper" *ngIf="sanPhamDuocChon.product_code">
+            <img
+              [src]="'https://barcode.tec-it.com/barcode.ashx?data=' + sanPhamDuocChon.product_code + '&code=Code128&translate-esc=false'"
+              alt="Mã vạch"
+            />
+            <!-- Hiện mã số bên dưới mã vạch -->
+            <p class="barcode-text">{{ sanPhamDuocChon.product_code }}</p>
+          </div>
+        </div>
+
+
+        <div class="right">
+        <div class="section">
+            <h4>📝 Thông tin sản phẩm</h4>
+            <p><strong>Mã SP:</strong> {{ sanPhamDuocChon.product_code }}</p>
+            <p><strong>Tên SP:</strong> {{ sanPhamDuocChon.product_name }}</p>
+            <p><strong>Loại hàng:</strong> {{ sanPhamDuocChon.product_type }}</p>
+            <p><strong>Đơn vị:</strong> {{ sanPhamDuocChon.unit }}</p>
+            <p><strong>Số lượng:</strong> {{ sanPhamDuocChon.quantity }}</p>
+            <p><strong>Ngày sản xuất:</strong> {{ sanPhamDuocChon.manufacture_date | date }}</p>
+            <p><strong>Hạn sử dụng:</strong> {{ sanPhamDuocChon.expiry_date | date }}</p>
+        </div>
+
+        <div class="section">
+            <h4>📐 Thông số kỹ thuật</h4>
+            <p><strong>Khối lượng:</strong> {{ sanPhamDuocChon.weight }} kg</p>
+            <p><strong>Diện tích:</strong> {{ sanPhamDuocChon.area }} m²</p>
+            <p><strong>Giá mỗi đơn vị:</strong> {{ sanPhamDuocChon.unit_price | number }}</p>
+            <p><strong>Thành tiền:</strong> {{ sanPhamDuocChon.total_price | number }}</p>
+        </div>
+
+        <div class="section">
+            <h4>🏬 Kho & nhập hàng</h4>
+            <p><strong>Khu vực:</strong> {{ sanPhamDuocChon.ten_khu_vuc }}</p>
+            <p><strong>Vị trí kho:</strong> {{ sanPhamDuocChon.location }}</p>
+            <p><strong>Ngày nhập:</strong> {{ sanPhamDuocChon.import_date | date }}</p>
+        </div>
+
+        <div class="section supplier">
+            <h4>🤝 Nhà cung cấp</h4>
+            <div class="supplier-info">
+            <span>{{ sanPhamDuocChon.supplier_name }}</span>
+            <img *ngIf="sanPhamDuocChon.logo_url" [src]="sanPhamDuocChon.logo_url" />
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Popup cập nhật sản phẩm -->
+     <div class="popup-overlay" *ngIf="hienPopupCapNhat" (click)="dongPopupCapNhat()"></div>
+<div class="popup" *ngIf="hienPopupCapNhat">
+  <h3>✏️ Cập nhật sản phẩm</h3>
+  <button class="close-btn" (click)="dongPopupCapNhat()">✖</button>
+
+  <form (submit)="capNhatSanPham()">
+    <div class="form-grid">
+      <label>Mã sản phẩm:</label>
+      <input [(ngModel)]="sanPhamCapNhat.product_code" name="ma" required />
+
+      <label>Tên sản phẩm:</label>
+      <input [(ngModel)]="sanPhamCapNhat.product_name" name="ten" required />
+
+      <label>Loại hàng:</label>
+      <input [(ngModel)]="sanPhamCapNhat.product_type" name="loai" required />
+
+      <label>Đơn vị:</label>
+      <input [(ngModel)]="sanPhamCapNhat.unit" name="donvi" />
+
+      <label>Số lượng:</label>
+      <input type="number" [(ngModel)]="sanPhamCapNhat.quantity" name="soluong" />
+
+      <label>Khối lượng:</label>
+      <input type="number" [(ngModel)]="sanPhamCapNhat.weight" name="kl" />
+
+      <label>Diện tích:</label>
+      <input type="number" [(ngModel)]="sanPhamCapNhat.area" name="dt" />
+
+      <label>Ngày sản xuất:</label>
+      <input type="date" [(ngModel)]="sanPhamCapNhat.manufacture_date" name="nsx" />
+
+      <label>Hạn sử dụng:</label>
+      <input type="date" [(ngModel)]="sanPhamCapNhat.expiry_date" name="hsd" />
+
+      <label>Giá mỗi đơn vị:</label>
+      <input type="number" [(ngModel)]="sanPhamCapNhat.unit_price" name="gia" />
+
+      <label>Khu vực:</label>
+      <select [(ngModel)]="sanPhamCapNhat.khu_vuc_id" name="khuvuc">
+        <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
+      </select>
+
+      <label>Ảnh sản phẩm:</label>
+      <input type="file" (change)="chonFileAnhCapNhat($event)" />
+      <img *ngIf="previewAnh" [src]="previewAnh" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+
+      <label>Tên nhà cung cấp:</label>
+      <input [(ngModel)]="sanPhamCapNhat.supplier_name" name="ncc" />
+
+      <label>Logo NCC:</label>
+      <input type="file" (change)="chonFileLogoCapNhat($event)" />
+      <img *ngIf="previewLogo" [src]="previewLogo" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+    </div>
+
+    <button class="btn-luu" type="submit">💾 Cập nhật</button>
+  </form>
+</div>
+
+
+
+</div>

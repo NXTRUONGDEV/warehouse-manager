@@ -28,8 +28,9 @@
                "src/assets/vendor/bootstrap/css/bootstrap.min.css",
                "src/assets/css/bootstrap.min.css",
                "src/assets/css/kaiadmin.min.css",
-               "src/assets/css/demo.css"
-               
+               "src/assets/css/demo.css",
+               "node_modules/aos/dist/aos.css",
+               "node_modules/swiper/swiper-bundle.min.css"
             ],
             "scripts": [
                "src/assets/vendor/jquery/jquery.js",
@@ -39,7 +40,9 @@
               "src/assets/js/custom.js",
               "src/assets/js/imagesloaded.js",
               "src/assets/js/isotope.js",
-              "src/assets/js/tabs.js"
+              "src/assets/js/tabs.js",
+              "node_modules/aos/dist/aos.js"
+              
             ]
           },
           "configurations": {

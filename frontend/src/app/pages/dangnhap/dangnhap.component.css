@@ -1,6 +1,13 @@
+
+.container {
+  background-color: beige;
+}
+
 /* login.component.css */
 .contact-us {
   padding: 60px 20px;
+  margin-top: 10%;
+  background-color: beige!important;
 }
 
 .auth-box {

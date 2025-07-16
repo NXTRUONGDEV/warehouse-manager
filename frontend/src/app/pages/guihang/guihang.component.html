@@ -1,41 +1,190 @@
-<!-- Tiếp nhận hàng từ đối tác -->
-  <div id="cungcaphang" class="about-us section">
+
+<body style="background-color: beige;">
+
+  <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
     <div class="container">
       <div class="row">
-        <div class="col-lg-6">
-          <div class="left-image">
-            <img src="https://via.placeholder.com/500x350?text=Hinh+Anh+Kho" alt="Tiếp nhận hàng">
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="section-heading">
-            <h6>Dịch vụ kho</h6>
-            <h2>Chúng tôi <em>tiếp nhận</em> hàng từ <span>đối tác &amp; nhà cung cấp</span></h2>
-          </div>
-          <div class="row">
-            <div class="col-lg-4 col-sm-4">
-              <div class="about-item">
-                <h4>1,200+</h4>
-                <h6>Đơn hàng đã nhập kho</h6>
+        <div class="col-lg-12">
+            <div class="form-container">
+            <h2>📦 PHIẾU NHẬP KHO - WAREHOUSE MANAGER T&H</h2>
+            
+            <form (ngSubmit)="submitForm()" enctype="multipart/form-data">
+              <!-- Ngày tạo -->
+              <div class="row">
+                <label>📅 Ngày tạo:</label>
+                <input type="date" [(ngModel)]="formData.created_date" name="created_date" readonly>
+
+                <label style="margin-left: 20px;">📄 Mã phiếu:</label>
+                <input type="text" [value]="generatedReceiptCode || 'Đang tạo...'" readonly>
               </div>
-            </div>
-            <div class="col-lg-4 col-sm-4">
-              <div class="about-item">
-                <h4>600+</h4>
-                <h6>Đối tác gửi hàng</h6>
+
+              <!-- Tên nhà cung cấp -->
+              <div class="row">
+                <label>🏢 Tên nhà cung cấp:</label>
+                <input type="text" [(ngModel)]="formData.supplier_name" name="supplier_name" required>
               </div>
-            </div>
-            <div class="col-lg-4 col-sm-4">
-              <div class="about-item">
-                <h4>99.9%</h4>
-                <h6>Chính xác kiểm kho</h6>
+
+              <!-- Logo nhà cung cấp -->
+              <div class="row">
+                <label>🖼️ Logo nhà cung cấp:</label>
+                <input type="file" accept="image/*" (change)="onLogoChange($event)">
+                <img *ngIf="formData.logoPreview" [src]="formData.logoPreview" class="preview-img">
               </div>
-            </div>
+
+              <!-- Địa chỉ nhà cung cấp -->
+              <div class="row">
+                <label>📍 Địa chỉ nhà cung cấp:</label>
+                <input type="text" [(ngModel)]="formData.supplier_address" name="supplier_address" required>
+              </div>
+
+              <!-- Thông tin đại diện nhà cung cấp -->
+              <div class="info-card">
+                <h4>🧾 Thông tin liên lạc nhà cung cấp</h4>
+                <div class="row">
+                  <label>👤 Họ và tên đại diện:</label>
+                  <input type="text" [(ngModel)]="formData.representative_name" name="representative_name" required>
+                </div>
+
+                <div class="row">
+                  <label>📧 Email đại diện:</label>
+                  <input type="email" [(ngModel)]="formData.representative_email" name="representative_email" required>
+                </div>
+
+                <div class="row">
+                  <label>📞 Số điện thoại:</label>
+                  <input type="text" [(ngModel)]="formData.representative_phone" name="representative_phone" required>
+                </div>
+              </div>
+
+              <!-- 🔔 Ghi chú yêu cầu cập nhật đầy đủ thông tin -->
+              <div class="alert alert-warning" style="margin-bottom: 15px; background-color: #fff3cd; padding: 10px; border-left: 5px solid #ffc107;">
+                 <strong>Lưu ý:</strong> Phiếu chỉ được gửi khi bạn cập nhật đầy đủ thông tin nhân viên.
+              </div>
+
+              <div class="info-card">
+                <!-- Tên nhân viên -->
+                <div class="row">
+                  <label>👤 Tên nhân viên tạo phiếu</label>
+                  <input type="text" [value]="userInfo.full_name" readonly>
+                </div>
+                
+                <!-- Tài khoản nhân viên-->
+                <div class="row">
+                  <label>👤 Tài khoản nhân viên tạo phiếu</label>
+                  <input type="text" [value]="userEmail" readonly>
+                </div>
+              </div>
+
+
+              <h4>📝 Danh sách sản phẩm</h4>
+              <div style="overflow-x: auto;" class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>STT</th>
+                      <th>Hình ảnh</th>
+                      <th>Mã sản phẩm</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Loại</th>
+                      <th>Đơn vị</th>
+                      <th>Ngày sản xuất</th>
+                      <th>Hạn sử dụng</th>
+                      
+                      <th>Số lượng</th>
+                      <th>Trọng lượng 1 sản phẩm (KG)</th> <!-- 🆕 Cột mới -->
+                      <th>Trọng lượng lô hàng (KG)</th>
+                      <th>Diện tích (m<sup>2</sup>)</th>
+
+                      <th>Đơn giá</th>
+                      <th>Thành tiền</th>
+                      <th>Xoá</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of formData.products; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>
+                        <input type="file" accept="image/*" (change)="onProductImageChange($event, i)">
+                        <img *ngIf="item.preview" [src]="item.preview" class="preview-img-small">
+                      </td>
+                      <td>
+                        <input [(ngModel)]="item.product_code" name="code{{i}}" required>
+                        <div *ngIf="item.product_code">
+                        </div>
+                      </td>
+                      <td><input [(ngModel)]="item.product_name" name="product_name{{i}}" required></td>
+                      <td><input [(ngModel)]="item.product_type" name="type{{i}}" required></td>
+                      <td><input [(ngModel)]="item.unit" name="unit{{i}}" required></td>
+                      <td><input [(ngModel)]="item.manufacture_date" name="nsx{{i}}" type="date" required></td>
+                      <td><input [(ngModel)]="item.expiry_date" name="hsd{{i}}" type="date" required></td>
+                      
+                      <td><input [(ngModel)]="item.quantity" name="quantity{{i}}" type="number" required></td>
+                      <!-- Trọng lượng 1 sản phẩm (KG) -->
+                      <td>
+                        <div style="display: flex; align-items: center;">
+                          <input [(ngModel)]="item.kg_per_unit" name="kgperunit{{i}}" type="number" required
+                                (input)="updateWeightAndArea(i)" style="width: 80px;">
+                          <span style="margin-left: 4px;">kg</span>
+                        </div>
+                      </td>
+
+                      <!-- Trọng lượng lô hàng (KG) - readonly -->
+                      <td>
+                        <div style="display: flex; align-items: center;">
+                          <input [(ngModel)]="item.weight" name="weight{{i}}" type="number" readonly style="width: 80px; background-color: #f9f9f9;">
+                          <span style="margin-left: 4px;">kg</span>
+                        </div>
+                      </td>
+
+                      <!-- Diện tích (m²) - readonly -->
+                      <td>
+                        <div style="display: flex; align-items: center;">
+                          <input [(ngModel)]="item.area" name="area{{i}}" type="number" readonly style="width: 80px; background-color: #f9f9f9;">
+                          <span style="margin-left: 4px;">m²</span>
+                        </div>
+                      </td>
+
+                      
+                      <td><input [(ngModel)]="item.unit_price" name="price{{i}}" type="number" required></td>
+                      <td>{{ item.quantity * item.unit_price | number:'1.0-0' }}</td>
+                      <td><button type="button" (click)="removeProduct(i)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+
+              <button type="button" (click)="addProduct()">➕ Thêm sản phẩm</button>
+
+              <br>
+              <br>
+
+              <!-- Tổng cộng -->
+              <div class="row total-row">
+                <label>Tổng cộng: <span>{{ calculateTotal() | number:'1.0-0' }} VNĐ</span></label>
+              </div>
+
+              <!-- Ngày hẹn gặp mặt -->
+              <div class="row">
+                <label>📅 Ngày hẹn nhập hàng:</label>
+                <input type="date" [(ngModel)]="formData.appointment_date" name="appointment_date" required>
+              </div>
+
+              <!-- Ghi chú -->
+              <div class="row">
+                <label>📝 Ghi chú cho quản lý kho (nếu có):</label>
+                <textarea rows="4" [(ngModel)]="formData.note" name="note" placeholder="Nhập ghi chú nếu có..."></textarea>
+              </div>
+
+
+              <!-- Gửi -->
+              <button type="submit" class="submit-btn">✅ Gửi phiếu nhập hàng</button>
+            </form>
+
           </div>
-          <p>Đối tác và nhà cung cấp có thể gửi hàng đến kho của chúng tôi để lưu trữ, xử lý và phân phối. 
-            Chúng tôi đảm bảo kiểm tra, nhập kho và bảo quản hàng hóa an toàn, đúng quy trình.</p>
-          <div class="main-green-button"><a href="#">Gửi hàng đến kho</a></div>
         </div>
       </div>
     </div>
   </div>
+
+</body>
