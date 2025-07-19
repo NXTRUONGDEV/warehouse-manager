@@ -1393,13 +1393,7 @@ app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
   }
 });
 
-
-// ========================== SERVER ==========================
-
-app.listen(3000, () => {
-  console.log('✅ Server chạy tại http://localhost:3000');
-});
-
+// ========================== Xuất hóa đơn  ==========================
 //cập nhật đã xuất hóa đơn nhập
 app.put('/api/phieu-nhap/:id/xuat-hoa-don', (req, res) => {
   const id = req.params.id;
@@ -1432,6 +1426,8 @@ app.put('/api/phieu-xuat/:id/xuat-hoa-don', (req, res) => {
   });
 });
 
+
+// ========================== Xem toàn bộ hóa đơn ==========================
 //api lấy toàn bộ hóa đơn 
 // 🔧 API: Lấy toàn bộ hóa đơn (phiếu nhập + xuất), chi tiết + người tạo
 app.get('/api/hoa-don', (req, res) => {
@@ -1526,6 +1522,7 @@ app.get('/api/hoa-don', (req, res) => {
   });
 });
 
+// ========================== Quản lý location ==========================
 // 🧠 API: Lấy tổng quan kho
 app.get('/api/kho/overview', (req, res) => {
   const query1 = `SELECT * FROM vw_tong_suc_chua_kho`;
@@ -1592,8 +1589,104 @@ app.get('/api/kho/area/:khuvucId', (req, res) => {
   });
 });
 
+// Lấy danh sách sản phẩm trong 1 pallet
+app.get('/api/kho/pallet/:location', (req, res) => {
+  const location = req.params.location;
+
+  const sql1 = `SELECT * FROM products_detail WHERE location = ?`;
+
+  db.query(sql1, [location], (err1, results1) => {
+    if (err1 || results1.length === 0) {
+      console.error('❌ Lỗi truy vấn pallet:', err1);
+      return res.status(500).json({ message: 'Không tìm thấy pallet' });
+    }
+
+    // Duyệt từng sản phẩm, tìm location khác tương ứng
+    const promises = results1.map((product) => {
+      return new Promise((resolve, reject) => {
+        const sql2 = `
+          SELECT location FROM products_detail
+          WHERE product_code = ? AND location != ?
+          ORDER BY location ASC
+        `;
+
+        db.query(sql2, [product.product_code, location], (err2, locs) => {
+          if (err2) return reject(err2);
+          resolve({
+            product,
+            otherLocations: locs.map(l => l.location)
+          });
+        });
+      });
+    });
+
+    Promise.all(promises)
+      .then((finalList) => {
+        res.json({ products: finalList });
+      })
+      .catch((err) => {
+        console.error('❌ Lỗi truy vấn location:', err);
+        res.status(500).json({ message: 'Lỗi khi truy vấn vị trí khác' });
+      });
+  });
+});
+
+
+// ========================== chuyển vị trí , và lưu cập nhật ==========================
+app.post('/api/kho/chuyen-pallet', (req, res) => {
+  const { products, from, to, user_email } = req.body;
+
+  if (!products?.length || !from || !to || !user_email)
+    return res.status(400).json({ message: "Thiếu thông tin" });
+
+  const updates = products.map(prod => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE products_detail SET location = ? WHERE id = ?`;
+      db.query(sql, [to, prod.id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  });
+
+  Promise.all(updates)
+    .then(() => {
+      const logSql = `INSERT INTO location_transfer_log (product_code, from_location, to_location, user_email, transfer_time)
+                      VALUES ?`;
+      const values = products.map(p => [p.product_code, from, to, user_email, new Date()]);
+      db.query(logSql, [values], (err2) => {
+        if (err2) console.error('❌ Ghi log lỗi:', err2);
+      });
+      res.json({ message: "Chuyển hàng thành công" });
+    })
+    .catch(err => {
+      console.error("❌ Lỗi chuyển:", err);
+      res.status(500).json({ message: "Lỗi chuyển pallet" });
+    });
+});
+
+
+// GET toàn bộ log theo email
+app.get('/api/kho/transfer-log', (req, res) => {
+  const email = req.query.email;
+  db.query(
+    'SELECT * FROM location_transfer_log WHERE user_email = ? ORDER BY transfer_time DESC',
+    [email],
+    (err, results) => {
+      if (err) {
+        console.error("❌ Lỗi truy vấn log:", err);
+        return res.status(500).json({ message: 'Lỗi truy vấn log' });
+      }
+      res.json(results);
+    }
+  );
+});
 
 
 
+// ========================== SERVER ==========================
 
+app.listen(3000, () => {
+  console.log('✅ Server chạy tại http://localhost:3000');
+});
 

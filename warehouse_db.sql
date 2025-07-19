@@ -292,7 +292,6 @@ CREATE TABLE products_detail (
   logo_url TEXT                               -- Logo nhà cung cấp
 );
 
-
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
 
@@ -404,3 +403,14 @@ ORDER BY kv.id ASC, pd.import_date DESC;
 SHOW TRIGGERS;
 SHOW TRIGGERS LIKE 'user_info';
 DROP TRIGGER IF EXISTS sync_name_from_fullname;
+
+CREATE TABLE location_transfer_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(100),
+  from_location VARCHAR(50),
+  to_location VARCHAR(50),
+  user_email VARCHAR(100),
+  transfer_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+drop table location_transfer_log;
