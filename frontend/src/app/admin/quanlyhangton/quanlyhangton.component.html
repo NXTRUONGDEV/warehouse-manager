@@ -1,0 +1,117 @@
+<h2 class="page-title">📦 Quản lý hàng tồn - Danh sách sản phẩm</h2>
+
+<table class="product-table">
+  <thead>
+    <tr>
+      <th>🖼️ Hình</th>
+      <th>📦 Mã sản phẩm</th>
+      <th>📝 Tên sản phẩm</th>
+      <th>🏬 Khu vực</th>
+      <th>📥 Số lượng nhập kho</th>
+      <th>🔢 Số lượng tồn kho</th>
+      <th>⏳ Hạn sử dụng</th>
+      <th>💰 Giá</th>
+      <th>⚙️ Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngFor="let sp of danhSachSanPham">
+      <tr (click)="moPopupChiTiet(sp)">
+        <td><img [src]="sp.image_url" width="50" /></td>
+        <td (click)="$event.stopPropagation()"><div class="barcode-text">{{ sp.product_code }}</div></td>
+        <td>{{ sp.product_name }}</td>
+        <td>{{ sp.ten_khu_vuc }}</td>
+        <td>{{ (+sp.quantity) + (+sp.total_deducted) }}</td>
+        <td [ngClass]="{
+              'low-stock': sp.quantity === 0,
+              'medium-stock': sp.quantity > 0 && sp.quantity <= 10,
+              'good-stock': sp.quantity > 10
+            }">
+          {{ sp.quantity }}
+        </td>
+        <td>
+          {{ sp.expiry_date | date: 'shortDate' }}
+          <div
+            class="expiry-countdown"
+            [ngClass]="{
+              'danger-text': demNguocMap[sp.product_code] === '⛔ Đã hết hạn',
+              'warning-text': isWarning(sp.product_code)
+            }"
+          >
+            ⏳ {{ demNguocMap[sp.product_code] }}
+          </div>
+        </td>
+        <td>{{ sp.unit_price | number:'1.0-0' }} VND</td>
+        <td (click)="$event.stopPropagation()">
+          <button class="btn btn-log" (click)="xemLichSu(sp, $event)">📜 Lịch sử</button>
+        </td>
+      </tr>
+
+     <!-- 👇 Bảng lịch sử trừ hàng ngay dưới dòng sản phẩm -->
+    <tr *ngIf="sanPhamDangMoLog === sp.product_code">
+    <td colspan="10">
+       <table class="log-table">
+        <thead>
+            <tr>
+            <th>Khu vực</th>
+            <th>Vị trí</th>
+            <th>SL đã trừ</th>
+            <th>Thời gian</th>
+            <th>Mã phiếu xuất</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let log of logHistory[sp.product_code]">
+            <td>{{ log.ten_khu_vuc }}</td>
+            <td>{{ log.pallet_name }}</td>
+            
+            <td>{{ log.quantity_deducted }}</td>
+            <td>{{ log.timestamp | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ log.receipt_code }}</td>
+            </tr>
+            <tr *ngIf="!logHistory[sp.product_code]?.length">
+            <td colspan="5">Chưa có đơn xuất hàng.</td>
+            </tr>
+        </tbody>
+        </table>
+    </td>
+    </tr>
+
+
+<!-- POPUP CHI TIẾT -->
+<div class="popup-backdrop" *ngIf="popupVisible">
+  <div class="popup-card">
+    <button class="popup-close" (click)="dongPopup()">❌</button>
+    <h3>{{ selectedProduct?.product_name }}</h3>
+    <img [src]="selectedProduct?.image_url" class="product-image" alt="Ảnh sản phẩm" />
+    <p><strong>Mã sản phẩm:</strong> {{ selectedProduct?.product_code }}</p>
+    <p><strong>Loại hàng:</strong> {{ selectedProduct?.product_type }}</p>
+    <p><strong>Đơn vị:</strong> {{ selectedProduct?.unit }}</p>
+    <p><strong>Số lượng tồn:</strong> {{ selectedProduct?.quantity }}</p>
+    <p><strong>Khu vực:</strong> {{ selectedProduct?.ten_khu_vuc }}</p>
+    <p><strong>Ngày sản xuất:</strong> {{ selectedProduct?.manufacture_date | date }}</p>
+    <p><strong>Hạn sử dụng:</strong> {{ selectedProduct?.expiry_date | date }}</p>
+    <p><strong>Giá mỗi đơn vị:</strong> {{ selectedProduct?.unit_price | number:'1.0-0' }} VND</p>
+
+    <!-- Danh sách vị trí các lô -->
+    <h4>📍 Vị trí các lô hàng</h4>
+    <table class="location-table" *ngIf="loHangCungMa.length > 0">
+    <thead>
+        <tr>
+        <th>Vị trí</th>
+        <th>Khu vực</th>
+        <th>Số lượng</th>
+        <th>Ngày nhập</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let l of loHangCungMa">
+        <td>{{ l.location }}</td>
+        <td>{{ l.ten_khu_vuc }}</td>
+        <td>{{ l.quantity }}</td>
+        <td>{{ l.import_date | date:'shortDate' }}</td>
+        </tr>
+    </tbody>
+    </table>
+  </div>
+</div>

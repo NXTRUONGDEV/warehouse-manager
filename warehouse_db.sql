@@ -1,6 +1,8 @@
 CREATE DATABASE warehouse_db;
 USE warehouse_db;
 
+SHOW COLUMNS FROM phieu_xuat_kho;
+
 -- Phần bảng cho tài khoản , thông tin tài khoản
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -128,7 +130,7 @@ DROP TABLE IF EXISTS phieu_nhap_kho;
 CREATE TABLE phieu_xuat_kho (
   id INT AUTO_INCREMENT PRIMARY KEY,                     -- Mã ID tự tăng
   receipt_code VARCHAR(50) UNIQUE,                       -- Mã phiếu xuất (ví dụ: PXK20250703-001)
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,              -- Ngày tạo phiếu
+  created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
   receiver_name VARCHAR(255) NOT NULL,                   -- Tên người nhận hàng
   receiver_address TEXT,                                 -- Địa chỉ nhận hàng
   logo_url TEXT,                                         -- Logo đơn vị nhận hàng (nếu có)
@@ -160,6 +162,7 @@ CREATE TABLE phieu_xuat_kho (
   ) DEFAULT 'Đã gửi phiếu',                                -- Trạng thái phiếu
   
   da_xuat_hoa_don BOOLEAN DEFAULT false,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,              -- Ngày tạo phiếu
 
   FOREIGN KEY (user_id) REFERENCES users(id)             -- Liên kết với người dùng
 );
@@ -185,7 +188,7 @@ CREATE TABLE phieu_xuat_kho_chi_tiet (
   FOREIGN KEY (phieu_xuat_kho_id) REFERENCES phieu_xuat_kho(id) ON DELETE CASCADE
 );
 
-UPDATE phieu_nhap_kho
+UPDATE phieu_xuat_kho
 SET trang_thai = 'Đã duyệt'
 WHERE id = 1;
 
@@ -253,6 +256,7 @@ VALUES
 ('Thiết bị điện tử', 'Các thiết bị công nghệ, điện tử'),
 ('Đồ dùng gia đình', 'Nồi niêu, nước lau nhà, nước rửa chén, vật dụng gia đình');
 
+
 /*Bảng danh sách sản phẩm*/
 CREATE TABLE products_detail (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -291,7 +295,6 @@ CREATE TABLE products_detail (
   supplier_name VARCHAR(255),                 -- Tên nhà cung cấp
   logo_url TEXT                               -- Logo nhà cung cấp
 );
-
 
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
@@ -404,3 +407,25 @@ ORDER BY kv.id ASC, pd.import_date DESC;
 SHOW TRIGGERS;
 SHOW TRIGGERS LIKE 'user_info';
 DROP TRIGGER IF EXISTS sync_name_from_fullname;
+
+CREATE TABLE location_transfer_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(100),
+  from_location VARCHAR(50),
+  to_location VARCHAR(50),
+  user_email VARCHAR(100),
+  transfer_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE log_tru_hang (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  product_code VARCHAR(50),
+  pallet_name VARCHAR(50),
+  quantity_deducted INT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  phieu_xuat_id INT
+);
+
+drop table location_transfer_log;
+
+

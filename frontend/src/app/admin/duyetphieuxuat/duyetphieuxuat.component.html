@@ -40,12 +40,14 @@
             <td>{{ p.receipt_code }}</td>
             <td>{{ p.receiver_name }}</td>
             <td>{{ p.created_date | date:'dd/MM/yyyy' }}</td>
+            <td>
             <span [ngClass]="{
                 'status-duyet': p.trang_thai === 'Đã duyệt',
                 'status-dahoanthanh': p.trang_thai === 'Đã xuất hàng khỏi kho'
                 }">
                 {{ p.trang_thai }}
             </span>
+            </td>
             <td>
                 <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">✔️ Kiểm tra duyệt phiếu</button>
                 <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">🔄 Cập nhật</button>
@@ -181,7 +183,7 @@
                     <button 
                     [disabled]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
                     [class.disabled-button]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
-                    (click)="xacNhanNhapKhoChinhThuc()">
+                    (click)="xacNhanXuatKhoChinhThuc()">
                     ✅ Xác nhận xuất hàng khỏi kho
                     </button> 
                     </div>
@@ -351,7 +353,7 @@
                         <!-- Nút hành động --> 
                         <div class="button-group">
                         <button 
-                            (click)="xacNhanNhapKhoChinhThuc()"
+                            (click)="xacNhanXuatKhoChinhThuc()"
                             [disabled]="selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng'"
                             [ngStyle]="{ opacity: selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng' ? '0.6' : '1' }"
                         >

@@ -175,8 +175,8 @@ export class DuyetphieuxuatComponent implements OnInit {
     });
   }
 
-    // Xác nhận nhập kho chính thức
-  xacNhanNhapKhoChinhThuc() {
+    // Xác nhận xuất kho chính thức
+  xacNhanXuatKhoChinhThuc() {
     if (!this.selectedPhieu) return;
 
     const id = this.selectedPhieu.id;

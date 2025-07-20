@@ -70,19 +70,20 @@
               <td>{{ hd.created_date | date:'dd/MM/yyyy' }}</td>
               <td>{{ hd.total_amount | number:'1.0-0' }} VNĐ</td>
               <td>{{ hd.trang_thai }}</td>
-              <div class="btn-wrapper">
+               <td>
+                <div class="btn-wrapper">
                   <button class="btn-view" (click)="xemChiTietHoaDon(hd)">
                     🔍 Xem
                   </button>
-                  <span 
-                    *ngIf="hd.trang_thai === 'Đã duyệt' && !hd.daXuatHoaDon" 
-                    class="badge-corner">!</span>
+                  <span *ngIf="hd.trang_thai === 'Đã duyệt' && !hd.daXuatHoaDon" class="badge-corner">!</span>
                 </div>
+              </td>
             </tr>
 
             <!-- Dòng chi tiết ngay dưới -->
             <tr *ngIf="selectedHoaDon?.receipt_code === hd.receipt_code">
               <td colspan="6">
+                <div class="chi-tiet-wrapper">
                 <div class="detail-container">
 
 <!---------------------------- Chi tiết PHIẾU NHẬP ---------------------------->
@@ -151,6 +152,7 @@
 
                   <!-- Danh sách sản phẩm -->
                   <h4>📦 Danh sách sản phẩm</h4>
+                  <div class="table-scroll-x">
                   <table class="detail-table">
                     <thead>
                       <tr>
@@ -190,6 +192,7 @@
                       </tr>
                     </tbody>
                   </table>
+                  </div>
 
                   <div class="total-amount">
                     <strong>💰 Tổng cộng:</strong> {{ selectedHoaDon.total_amount | number:'1.0-0' }} VNĐ
@@ -277,6 +280,7 @@
 
                     <!-- Danh sách sản phẩm xuất -->
                     <h4>📦 Danh sách sản phẩm</h4>
+                    <div class="table-scroll-x">
                     <table class="detail-table">
                       <thead>
                         <tr>
@@ -314,6 +318,7 @@
                         </tr>
                       </tbody>
                     </table>
+                    </div>
 
                     <div class="total-weight">
                       <strong>Tổng trọng lượng đơn hàng:</strong> {{ selectedHoaDon.total_weight | number:'1.0-0' }} KG
@@ -344,6 +349,7 @@
 
                   </ng-template>
 
+                </div>
                 </div>
               </td>
             </tr>

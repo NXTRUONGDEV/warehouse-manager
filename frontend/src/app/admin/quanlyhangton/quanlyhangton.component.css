@@ -1,0 +1,278 @@
+/* 🌟 CSS ĐẲNG CẤP CHO QUẢN LÝ HÀNG TỒN 🌟 */
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f4f6fb;
+  margin: 0;
+  padding: 24px;
+  color: #333;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: #1f2937;
+  margin-top: 2%;
+}
+
+/* ==== TABLE CHÍNH ==== */
+.product-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.product-table thead tr {
+  background: #eef2f8;
+  color: #374151;
+  text-align: left;
+}
+
+.product-table th,
+.product-table td {
+  padding: 12px;
+  font-size: 14px;
+}
+
+.product-table tbody tr {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease;
+}
+
+.product-table tbody tr:hover {
+  transform: scale(1.005);
+}
+
+.product-table img {
+  border-radius: 8px;
+}
+
+.barcode-text {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #444;
+}
+
+/* ==== BUTTON ==== */
+.btn-log {
+  background: #e5e7eb;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-log:hover {
+  background: #d1d5db;
+}
+
+/* ==== POPUP CHI TIẾT ==== */
+.popup-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-card {
+  background: white;
+  padding: 28px;
+  border-radius: 16px;
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.product-image {
+  width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.popup-card p {
+  margin: 6px 0;
+  font-size: 15px;
+}
+
+/* ==== BẢNG PHỤ (VỊ TRÍ) ==== */
+.sub-table, .log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.sub-table th, .sub-table td,
+.log-table th, .log-table td {
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.sub-table th, .log-table th {
+  background-color: #f9fafb;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.sub-table tbody tr:hover,
+.log-table tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+/* ==== DÒNG LOG BÊN DƯỚI ==== */
+.product-table tr.sub-log-row td {
+  background-color: #f9fafb;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  padding: 16px;
+}
+
+/* ==== ANIMATION ==== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==== BẢNG VỊ TRÍ LOCATION ==== */
+.location-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.location-table thead th {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+}
+
+.location-table tbody tr {
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: background 0.2s ease;
+}
+
+.location-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.location-table td {
+  padding: 10px 12px;
+  color: #374151;
+  border-top: 1px solid #eee;
+}
+
+.location-table tbody tr:first-child td {
+  border-top: none;
+}
+
+.low-stock {
+  background-color: #f8d7da; /* đỏ nhạt */
+  color: #721c24;
+  font-weight: bold;
+}
+
+.medium-stock {
+  background-color: #fff3cd; /* vàng nhạt */
+  color: #856404;
+  font-weight: bold;
+}
+
+.good-stock {
+  background-color: #d4edda; /* xanh nhạt */
+  color: #155724;
+  font-weight: bold;
+}
+
+
+.warning-text {
+  color: orange;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.danger-text {
+  color: red;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.expiring-soon {
+  color: orange;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.expired {
+  color: red;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.expiry-countdown {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+  animation: pulse 2s infinite;
+}
+
+.warning-text {
+  color: orange;
+}
+
+.danger-text {
+  color: red;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.expiry-countdown {
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.danger-text {
+  color: #dc3545; /* đỏ */
+  font-weight: bold;
+}
+
+.warning-text {
+  color: #ffc107; /* vàng */
+}

@@ -351,7 +351,6 @@ app.get('/api/hoa-don/:userId', (req, res) => {
     WHERE pxk.user_id = ?
   `;
 
-  // ----------- XỬ LÝ PHIẾU NHẬP --------------
   db.query(nhapQuery, [userId], (err1, nhapList) => {
     if (err1) {
       console.error('❌ Lỗi truy vấn phiếu nhập:', err1);
@@ -374,41 +373,31 @@ app.get('/api/hoa-don/:userId', (req, res) => {
       })
     )
     .then((withDetails) => {
-      // ----------- XỬ LÝ PHIẾU XUẤT --------------
-      db.query(xuatQuery, [userId], async (err2, xuatListRaw) => {
+      db.query(xuatQuery, [userId], async (err2, xuatList) => {
         if (err2) {
           console.error('❌ Lỗi truy vấn phiếu xuất:', err2);
           return res.status(500).json({ message: 'Lỗi lấy phiếu xuất' });
         }
 
         try {
-          const xuatList = await Promise.all(
-            xuatListRaw.map((pxk) => {
+          const xuatWithDetails = await Promise.all(
+            xuatList.map((pxk) => {
               return new Promise((resolve, reject) => {
                 db.query(
                   `SELECT * FROM phieu_xuat_kho_chi_tiet WHERE phieu_xuat_kho_id = ?`,
                   [pxk.id],
                   (err, products) => {
                     if (err) return reject(err);
-
-                    db.query(
-                      `SELECT * FROM payment_fake_transactions WHERE phieu_xuat_kho_id = ?`,
-                      [pxk.id],
-                      (err2, payments) => {
-                        if (err2) return reject(err2);
-                        pxk.products = products;
-                        pxk.payment = payments[0] || null;
-                        resolve(pxk);
-                      }
-                    );
+                    pxk.products = products;
+                    pxk.payment = null; // bỏ thanh toán
+                    resolve(pxk);
                   }
                 );
               });
             })
           );
 
-           // ✅ Gộp & sắp xếp mới nhất lên đầu
-          const hoaDonTong = [...withDetails, ...xuatList].sort((a, b) => {
+          const hoaDonTong = [...withDetails, ...xuatWithDetails].sort((a, b) => {
             const dateA = new Date(a.created_at || a.created_date);
             const dateB = new Date(b.created_at || b.created_date);
             return dateB - dateA || b.id - a.id;
@@ -1355,32 +1344,62 @@ app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
   const id = req.params.id;
 
   try {
+    // 1. Lấy chi tiết phiếu xuất
     const [chiTiet] = await db.promise().query(
       'SELECT product_code, quantity FROM phieu_xuat_kho_chi_tiet WHERE phieu_xuat_kho_id = ?',
       [id]
     );
 
+    // 2. Kiểm tra tồn kho từng sản phẩm
     for (const sp of chiTiet) {
       const [rows] = await db.promise().query(
-        'SELECT quantity FROM products_detail WHERE product_code = ?',
+        'SELECT SUM(quantity) AS total FROM products_detail WHERE product_code = ?',
         [sp.product_code]
       );
-
-      if (rows.length === 0 || rows[0].quantity < sp.quantity) {
+      const total = rows[0]?.total || 0;
+      if (total < sp.quantity) {
         return res.status(400).json({
           message: `❌ Không đủ số lượng sản phẩm: ${sp.product_code}`
         });
       }
     }
 
+    // 3. Trừ hàng từ nhiều lô (ưu tiên ít số lượng trước, location tăng dần số)
     for (const sp of chiTiet) {
-      await db.promise().query(
-        'UPDATE products_detail SET quantity = quantity - ? WHERE product_code = ?',
-        [sp.quantity, sp.product_code]
+      let remaining = sp.quantity;
+
+      const [lots] = await db.promise().query(
+        `SELECT id, khu_vuc_id, location, quantity 
+         FROM products_detail 
+         WHERE product_code = ? AND quantity > 0 
+         ORDER BY quantity ASC, khu_vuc_id ASC, CAST(SUBSTRING(location, 2) AS UNSIGNED) ASC`,
+        [sp.product_code]
       );
+
+      for (const lot of lots) {
+        if (remaining <= 0) break;
+
+        const deduct = Math.min(lot.quantity, remaining);
+
+        // Trừ hàng trong kho
+        await db.promise().query(
+          'UPDATE products_detail SET quantity = quantity - ? WHERE id = ?',
+          [deduct, lot.id]
+        );
+
+        // Ghi log trừ hàng
+        const palletName = `KV${lot.khu_vuc_id}__${lot.location || '??'}`;
+        await db.promise().query(
+          `INSERT INTO log_tru_hang (product_code, pallet_name, quantity_deducted, phieu_xuat_id)
+           VALUES (?, ?, ?, ?)`,
+          [sp.product_code, palletName, deduct, id]
+        );
+
+        remaining -= deduct;
+      }
     }
 
-    // Cập nhật trạng thái phiếu
+    // 4. Cập nhật trạng thái phiếu
     await db.promise().query(
       'UPDATE phieu_xuat_kho SET trang_thai = "Đã xuất hàng khỏi kho" WHERE id = ?',
       [id]
@@ -1389,17 +1408,15 @@ app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
     res.json({ message: '✔️ Xác nhận xuất kho thành công!' });
   } catch (err) {
     console.error('❌ Lỗi xác nhận xuất kho:', err);
-    res.status(500).json({ message: 'Lỗi hệ thống khi xác nhận xuất kho.' });
+    res.status(500).json({
+      message: 'Lỗi hệ thống khi xác nhận xuất kho.',
+      error: err.message || err
+    });
   }
 });
 
 
-// ========================== SERVER ==========================
-
-app.listen(3000, () => {
-  console.log('✅ Server chạy tại http://localhost:3000');
-});
-
+// ========================== Xuất hóa đơn  ==========================
 //cập nhật đã xuất hóa đơn nhập
 app.put('/api/phieu-nhap/:id/xuat-hoa-don', (req, res) => {
   const id = req.params.id;
@@ -1432,6 +1449,8 @@ app.put('/api/phieu-xuat/:id/xuat-hoa-don', (req, res) => {
   });
 });
 
+
+// ========================== Xem toàn bộ hóa đơn ==========================
 //api lấy toàn bộ hóa đơn 
 // 🔧 API: Lấy toàn bộ hóa đơn (phiếu nhập + xuất), chi tiết + người tạo
 app.get('/api/hoa-don', (req, res) => {
@@ -1449,7 +1468,6 @@ app.get('/api/hoa-don', (req, res) => {
     JOIN user_info ui ON pxk.user_id = ui.user_id
   `;
 
-  // 📦 Truy vấn phiếu nhập
   db.query(nhapQuery, async (err1, nhapList) => {
     if (err1) {
       console.error('❌ Lỗi truy vấn phiếu nhập:', err1);
@@ -1473,7 +1491,6 @@ app.get('/api/hoa-don', (req, res) => {
         })
       );
 
-      // 📤 Truy vấn phiếu xuất
       db.query(xuatQuery, async (err2, xuatList) => {
         if (err2) {
           console.error('❌ Lỗi truy vấn phiếu xuất:', err2);
@@ -1490,42 +1507,35 @@ app.get('/api/hoa-don', (req, res) => {
                   (err, products) => {
                     if (err) return reject(err);
                     pxk.products = products;
-
-                    db.query(
-                      `SELECT * FROM payment_fake_transactions WHERE phieu_xuat_kho_id = ?`,
-                      [pxk.id],
-                      (err2, payments) => {
-                        if (err2) return reject(err2);
-                        pxk.payment = payments[0] || null;
-                        resolve(pxk);
-                      }
-                    );
+                    pxk.payment = null; // bỏ thanh toán
+                    resolve(pxk);
                   }
                 );
               });
             })
           );
 
-          // 🧠 Gộp tất cả và sắp xếp mới nhất lên đầu
           const hoaDonTong = [...nhapWithDetails, ...xuatWithDetails].sort((a, b) => {
             const dateA = new Date(a.created_at || a.created_date);
             const dateB = new Date(b.created_at || b.created_date);
             return dateB - dateA || b.id - a.id;
           });
 
-          return res.json(hoaDonTong);
+          res.json(hoaDonTong);
         } catch (error) {
           console.error('❌ Lỗi tổng hợp chi tiết phiếu xuất:', error);
-          return res.status(500).json({ message: 'Lỗi tổng hợp phiếu xuất' });
+          res.status(500).json({ message: 'Lỗi tổng hợp phiếu xuất' });
         }
       });
     } catch (err) {
       console.error('❌ Lỗi tổng hợp chi tiết phiếu nhập:', err);
-      return res.status(500).json({ message: 'Lỗi tổng hợp phiếu nhập' });
+      res.status(500).json({ message: 'Lỗi tổng hợp phiếu nhập' });
     }
   });
 });
 
+
+// ========================== Quản lý location ==========================
 // 🧠 API: Lấy tổng quan kho
 app.get('/api/kho/overview', (req, res) => {
   const query1 = `SELECT * FROM vw_tong_suc_chua_kho`;
@@ -1554,7 +1564,6 @@ app.get('/api/kho/overview', (req, res) => {
 app.get('/api/kho/area/:khuvucId', (req, res) => {
   const khuId = parseInt(req.params.khuvucId);
 
-  // ✅ Kiểm tra giá trị khuId có hợp lệ không
   if (isNaN(khuId)) {
     console.warn('⚠️ khu_vuc_id không hợp lệ:', req.params.khuvucId);
     return res.status(400).json({ message: '❌ khu_vuc_id không hợp lệ!' });
@@ -1563,9 +1572,13 @@ app.get('/api/kho/area/:khuvucId', (req, res) => {
   const prefix = `KV${khuId}_L`;
 
   const sql = `
-    SELECT location, weight, area
+    SELECT 
+      location, 
+      SUM(quantity * weight_per_unit) AS total_weight,
+      SUM(quantity * area_per_unit) AS total_area
     FROM products_detail
     WHERE khu_vuc_id = ?
+    GROUP BY location
     ORDER BY location ASC
   `;
 
@@ -1583,8 +1596,8 @@ app.get('/api/kho/area/:khuvucId', (req, res) => {
 
       fullPallets.push({
         name: code,
-        weightUsed: found ? found.weight : 0,
-        areaUsed: found ? found.area : 0
+        weightUsed: found ? Math.round(found.total_weight || 0) : 0,
+        areaUsed: found ? Number((found.total_area || 0).toFixed(1)) : 0
       });
     }
 
@@ -1593,7 +1606,254 @@ app.get('/api/kho/area/:khuvucId', (req, res) => {
 });
 
 
+// Lấy danh sách sản phẩm trong 1 pallet
+app.get('/api/kho/pallet/:location', (req, res) => {
+  const location = req.params.location;
+
+  const sql1 = `
+    SELECT * 
+    FROM products_detail 
+    WHERE location = ? AND quantity > 0
+  `;
+
+  db.query(sql1, [location], (err1, results1) => {
+    if (err1 || results1.length === 0) {
+      console.error('❌ Lỗi truy vấn pallet:', err1);
+      return res.status(500).json({ message: 'Không tìm thấy pallet hoặc không còn sản phẩm nào' });
+    }
+
+    // Duyệt từng sản phẩm, tìm location khác tương ứng
+    const promises = results1.map((product) => {
+      return new Promise((resolve, reject) => {
+        const sql2 = `
+          SELECT location 
+          FROM products_detail
+          WHERE product_code = ? AND location != ? AND quantity > 0
+          ORDER BY location ASC
+        `;
+
+        db.query(sql2, [product.product_code, location], (err2, locs) => {
+          if (err2) return reject(err2);
+          resolve({
+            product,
+            otherLocations: locs.map(l => l.location)
+          });
+        });
+      });
+    });
+
+    Promise.all(promises)
+      .then((finalList) => {
+        res.json({ products: finalList });
+      })
+      .catch((err) => {
+        console.error('❌ Lỗi truy vấn location:', err);
+        res.status(500).json({ message: 'Lỗi khi truy vấn vị trí khác' });
+      });
+  });
+});
 
 
 
+// ========================== chuyển vị trí , và lưu cập nhật ==========================
+app.post('/api/kho/chuyen-pallet', (req, res) => {
+  const { products, from, to, user_email } = req.body;
 
+  if (!products?.length || !from || !to || !user_email)
+    return res.status(400).json({ message: "Thiếu thông tin" });
+
+  const updates = products.map(prod => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE products_detail SET location = ? WHERE id = ?`;
+      db.query(sql, [to, prod.id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  });
+
+  Promise.all(updates)
+    .then(() => {
+      const logSql = `INSERT INTO location_transfer_log (product_code, from_location, to_location, user_email, transfer_time)
+                      VALUES ?`;
+      const values = products.map(p => [p.product_code, from, to, user_email, new Date()]);
+      db.query(logSql, [values], (err2) => {
+        if (err2) console.error('❌ Ghi log lỗi:', err2);
+      });
+      res.json({ message: "Chuyển hàng thành công" });
+    })
+    .catch(err => {
+      console.error("❌ Lỗi chuyển:", err);
+      res.status(500).json({ message: "Lỗi chuyển pallet" });
+    });
+});
+
+
+// GET toàn bộ log theo email
+app.get('/api/kho/transfer-log', (req, res) => {
+  const email = req.query.email;
+  db.query(
+    'SELECT * FROM location_transfer_log WHERE user_email = ? ORDER BY transfer_time DESC',
+    [email],
+    (err, results) => {
+      if (err) {
+        console.error("❌ Lỗi truy vấn log:", err);
+        return res.status(500).json({ message: 'Lỗi truy vấn log' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+
+
+// ========================== Quản lý hàng tồn==========================
+
+// API trả về toàn bộ chi tiết sản phẩm tồn kho
+app.get('/api/products-detail', async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT 
+        product_code, 
+        product_name,
+        product_type, 
+        unit,
+        SUM(quantity) AS total_quantity,
+        weight_per_unit
+      FROM products_detail
+      GROUP BY product_code, product_name, product_type, unit, weight_per_unit
+      ORDER BY product_code ASC
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ Lỗi truy vấn products_detail:', err);
+    res.status(500).json({ message: 'Lỗi khi lấy dữ liệu sản phẩm tồn kho' });
+  }
+});
+
+// API này sẽ trả về các lô hàng chi tiết theo product_code
+app.get('/api/products-detail/by-code/:code', (req, res) => {
+  const code = req.params.code;
+  const sql = `
+    SELECT location, quantity, import_date, kv.ten_khu_vuc
+    FROM products_detail pd
+    JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
+    WHERE pd.product_code = ? AND pd.quantity > 0
+    ORDER BY import_date DESC
+  `;
+  db.query(sql, [code], (err, rows) => {
+    if (err) {
+      console.error('❌ Lỗi truy vấn /api/products-detail/by-code:', err);
+      return res.status(500).json({ message: 'Lỗi truy vấn', error: err });
+    }
+    res.json(rows);
+  });
+});
+
+
+// API này sẽ trả về các lịch sử trừ hàng
+// Cập nhật API để cắt chuỗi đúng phần location từ pallet_name
+app.get('/api/log-tru-hang/:productCode', async (req, res) => {
+  const code = req.params.productCode;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+         lth.pallet_name, 
+         lth.quantity_deducted, 
+         lth.timestamp, 
+         kv.ten_khu_vuc,
+         kv.mo_ta,
+         px.receipt_code
+       FROM log_tru_hang lth
+       LEFT JOIN products_detail pd 
+         ON pd.product_code = lth.product_code 
+         AND pd.location = SUBSTRING_INDEX(lth.pallet_name, '__', -1)
+       LEFT JOIN khu_vuc kv ON kv.id = pd.khu_vuc_id
+       LEFT JOIN phieu_xuat_kho px ON px.id = lth.phieu_xuat_id
+       WHERE lth.product_code = ?
+       ORDER BY lth.timestamp DESC`,
+      [code]
+    );
+
+    const data = rows.map(row => ({
+      // 👉 chỉ lấy phần sau dấu `__`
+      pallet_name: row.pallet_name.includes('__')
+        ? row.pallet_name.split('__')[1]
+        : row.pallet_name,
+
+      quantity_deducted: row.quantity_deducted,
+      timestamp: row.timestamp,
+      ten_khu_vuc: row.ten_khu_vuc || 'Không rõ',
+      khu_vuc_mo_ta: row.mo_ta || 'Không rõ',
+      receipt_code: row.receipt_code || 'Chưa có mã'
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '❌ Lỗi khi lấy log trừ hàng' });
+  }
+});
+
+
+// ========================== SERVER ==========================
+
+app.listen(3000, () => {
+  console.log('✅ Server chạy tại http://localhost:3000');
+});
+
+
+
+// ✅ Trả về danh sách sản phẩm số lượng sản phẩm đó nhập kho
+// GET /api/products-detail/with-deducted
+app.get('/api/products-detail/with-deducted', async (req, res) => {
+  try {
+    const [products] = await db.promise().query(`
+      SELECT 
+        pd.product_code,
+        MAX(pd.product_name) AS product_name,
+        MAX(pd.product_type) AS product_type,
+        MAX(pd.image_url) AS image_url,
+        MAX(pd.unit) AS unit,
+        SUM(pd.quantity) AS quantity,
+        SUM(pd.weight) AS weight,
+        SUM(pd.area) AS area,
+        MAX(pd.manufacture_date) AS manufacture_date,
+        MAX(pd.expiry_date) AS expiry_date,
+        MAX(pd.unit_price) AS unit_price,
+        SUM(pd.total_price) AS total_price,
+        MAX(pd.khu_vuc_id) AS khu_vuc_id,
+        MAX(kv.ten_khu_vuc) AS ten_khu_vuc,
+        MAX(pd.supplier_name) AS supplier_name,
+        MAX(pd.logo_url) AS logo_url,
+        MAX(pd.import_date) AS import_date,
+        MAX(pd.id) AS id
+      FROM products_detail pd
+      JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
+      GROUP BY pd.product_code
+    `);
+
+    const [logs] = await db.promise().query(`
+      SELECT product_code, SUM(quantity_deducted) AS total_deducted
+      FROM log_tru_hang
+      GROUP BY product_code
+    `);
+
+    const logMap = {};
+    logs.forEach(log => {
+      logMap[log.product_code] = log.total_deducted;
+    });
+
+    const result = products.map(p => ({
+      ...p,
+      total_deducted: logMap[p.product_code] || 0
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi khi lấy dữ liệu tổng trừ hàng' });
+  }
+});

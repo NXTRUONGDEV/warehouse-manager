@@ -26,6 +26,7 @@ import { DuyetphieuxuatComponent } from './admin/duyetphieuxuat/duyetphieuxuat.c
 import { QuanlysanphamComponent } from './admin/quanlysanpham/quanlysanpham.component';
 import { InvoiceManagerComponent } from './admin/invoice-manager/invoice-manager.component';
 import { LocationManagerComponent } from './admin/location-manager/location-manager.component';
+import { QuanlyhangtonComponent } from './admin/quanlyhangton/quanlyhangton.component';
 
 
 
@@ -41,10 +42,10 @@ export const routes: Routes = [
   { path: 'guihang', component: GuihangComponent, canActivate: [AuthGuard] },
   { path: 'muahang', component: MuahangComponent, canActivate: [AuthGuard] },
   { path: 'dichvu', component: DichvuComponent },
-  { path: 'hoadon', component: HoadonComponent },
+  { path: 'hoadon', component: HoadonComponent, canActivate: [AuthGuard] },
   { path: 'dangnhap', component: DangnhapComponent },
-  { path: 'trangcanhan', component: TrangcanhanComponent },
-  { path: 'sanphamcuakho', component: SanphamcuakhoComponent },
+  { path: 'trangcanhan', component: TrangcanhanComponent, canActivate: [AuthGuard] },
+  { path: 'sanphamcuakho', component: SanphamcuakhoComponent, canActivate: [AuthGuard] },
 
   // Layout Staff
   {
@@ -62,13 +63,14 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayoutComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'account-manager', component: AccountManagerComponent },
+      { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard, ProfileGuard] },
+      { path: 'account-manager', component: AccountManagerComponent, canActivate: [AuthGuard, ProfileGuard] },
       { path: 'duyetphieunhap', component: DuyetphieunhapComponent, canActivate: [AuthGuard, ProfileGuard] },
       { path: 'duyetphieuxuat', component: DuyetphieuxuatComponent, canActivate: [AuthGuard, ProfileGuard] },
-      { path: 'quanlysanpham', component: QuanlysanphamComponent },
-      { path: 'invoice-manager', component: InvoiceManagerComponent },
-      { path: 'location-manager', component: LocationManagerComponent },
+      { path: 'quanlysanpham', component: QuanlysanphamComponent, canActivate: [AuthGuard, ProfileGuard] },
+      { path: 'invoice-manager', component: InvoiceManagerComponent, canActivate: [AuthGuard, ProfileGuard] },
+      { path: 'location-manager', component: LocationManagerComponent, canActivate: [AuthGuard, ProfileGuard] },
+      { path: 'quanlyhangton', component: QuanlyhangtonComponent, canActivate: [AuthGuard, ProfileGuard] },
       // thêm các route admin khác
     ]
   },
