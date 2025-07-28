@@ -8,7 +8,7 @@ import { FilterProductCodePipe } from '../duyetphieunhap/filter-product-code.pip
 @Component({
   selector: 'app-duyetphieuxuat',
   standalone: true,
-  imports: [CommonModule, FormsModule,  FilterProductCodePipe],
+  imports: [CommonModule, FormsModule,FilterProductCodePipe],
   templateUrl: './duyetphieuxuat.component.html',
   styleUrls: ['./duyetphieuxuat.component.css']
 })
@@ -48,6 +48,7 @@ export class DuyetphieuxuatComponent implements OnInit {
 
   loadPhieu() {
     this.http.get<any[]>('http://localhost:3000/api/phieu-xuat').subscribe(data => {
+      console.log('📦 Dữ liệu phiếu xuất:', data);
       this.danhSachPhieuGoc = data;
       this.danhSachPhieu = [...data];
     });
@@ -83,6 +84,7 @@ export class DuyetphieuxuatComponent implements OnInit {
           ...sp,
           manufacture_date: sp.manufacture_date?.slice(0, 10),
           expiry_date: sp.expiry_date?.slice(0, 10),
+          quantity: sp.quantity ?? 0,
           total_price: sp.unit_price * sp.quantity
         }));
       }, err => {
@@ -176,22 +178,24 @@ export class DuyetphieuxuatComponent implements OnInit {
   }
 
     // Xác nhận nhập kho chính thức
-  xacNhanNhapKhoChinhThuc() {
-    if (!this.selectedPhieu) return;
+ xacNhanNhapKhoChinhThuc(p: any) {
+  if (!p) return;
 
-    const id = this.selectedPhieu.id;
-    this.http.post(`http://localhost:3000/api/phieu-xuat/xac-nhan-xuat-kho/${id}`, {}).subscribe({
-      next: (res: any) => {
-        alert(res.message || '✔️ Xác nhận thành công');
-        this.selectedPhieu.trang_thai = 'Đã xuất hàng khỏi kho';
-        this.popupNhapKhoMo = false;
-        
-      },
-      error: (err) => {
-        alert(err.error?.message || '❌ Lỗi khi xác nhận xuất kho');
-      }
-    });
-  }
+  const confirmed = confirm(`Bạn chắc chắn muốn xác nhận xuất kho cho phiếu: ${p.receipt_code}?`);
+  if (!confirmed) return;
+
+  const id = p.id;
+
+  this.http.post(`http://localhost:3000/api/phieu-xuat/xac-nhan-xuat-kho/${id}`, {}).subscribe({
+    next: (res: any) => {
+      alert(res.message || '✔️ Duyệt kho thành công');
+      p.trang_thai = 'Đã xuất hàng khỏi kho';  // cập nhật trạng thái hiển thị
+    },
+    error: (err) => {
+      alert(err.error?.message || '❌ Lỗi khi xác nhận duyệt kho');
+    }
+  });
+}
 
 //Những chức năng này chưa kiểm chứng
 
@@ -256,4 +260,21 @@ export class DuyetphieuxuatComponent implements OnInit {
     }
   }
 
+
+  
+ xoaPhieuXuat(id: number) {
+    if (!confirm('Bạn có chắc chắn muốn xoá phiếu xuất này?')) return;
+
+    this.http.delete(`http://localhost:3000/api/phieu-xuat/${id}`).subscribe({
+      next: (res: any) => {
+        alert(res.message || '✅ Xoá phiếu thành công!');
+        // Cập nhật lại danh sách hiển thị
+        this.danhSachPhieu = this.danhSachPhieu.filter(ph => ph.id !== id);
+      },
+      error: (err) => {
+        alert(err.error?.error || '❌ Lỗi khi xoá phiếu xuất!');
+      }
+    });
+  }
 }
+

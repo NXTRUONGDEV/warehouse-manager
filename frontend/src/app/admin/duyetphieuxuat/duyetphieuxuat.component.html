@@ -1,5 +1,5 @@
-<div class="main-panel">
 
+<div class="main-panel">
     <h2>📥 Duyệt phiếu xuất kho </h2>
 
     <!-- Thanh lọc phiếu xuất -->
@@ -28,35 +28,50 @@
         <thead>
         <tr>
             <th>Mã phiếu</th>
-            <th>Khách hàng / Doanh nghiệp / Tổ chức</th>
-            <th>Ngày tạo</th>
+            <th>Tên nhân viên</th>
+            <th>Ghi chú</th>
+            <th>Ngày Xuất</th>
+            <th>Số lượng</th>
             <th>Trạng thái</th>
             <th>Chức năng</th>
+            <th>Chọn</th>
         </tr>
         </thead>
         <ng-container *ngFor="let p of danhSachPhieu">
             <!-- Dòng phiếu -->
             <tr>
             <td>{{ p.receipt_code }}</td>
-            <td>{{ p.receiver_name }}</td>
+            <td>{{ p.staff_account_name }}</td>
+            <td>{{ p.note }}</td>
             <td>{{ p.created_date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ p.quantity }}</td>
             <td><span>{{ p.trang_thai }}</span></td>
             <td>
-                <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">✔️ Kiểm tra duyệt phiếu</button>
-                <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">🔄 Cập nhật</button>
-                <button *ngIf="p.trang_thai === 'Đã xuất hàng khỏi kho'" class="disabled-button" disabled>✔️ Hoàn thành</button>
+                <button class="btn-action"
+                        (click)="xacNhanNhapKhoChinhThuc(p)"
+                        [disabled]="p.trang_thai === 'Đã xuất hàng khỏi kho'"
+                        [ngStyle]="{ opacity: p.trang_thai === 'Đã xuất hàng khỏi kho' ? '0.6' : '1' }"
+                    > ✅ Xác nhận xuất hàng
+                </button>
+                <button (click)="xemChiTiet(p)" [disabled]="selectedPhieu?.id === p.id" class="btn-action">📋 Chi tiết</button>
+                <button (click)=" xoaPhieuXuat(p.id)"
+                aria-errormessage="Xoá phiếu xuất kho"
+                >🗑️ Xoá</button>
             </td>
+            <td>
+                <input type="checkbox">
+            </td>
+
             </tr>
 
             <!-- Dòng chi tiết nằm ngay bên dưới -->
             <tr *ngIf="selectedPhieu?.id === p.id">
-            <td colspan="5">
+            <td colspan="7">
                 <!-- Nội dung chi tiết phiếu ở đây -->
                 <!-- Chi tiết phiếu -->
                 <div class="detail-container">
                     <button class="btn-close-top" (click)="dongChiTiet()">✖</button>
                     <h3>📋 Chi tiết phiếu: {{ selectedPhieu.receipt_code }}</h3>
-
                     <!-- Thông tin chung -->
                     <div class="detail-info-wrapper">
                     <!-- Hàng đầu tiên: Thông tin thời gian -->
@@ -172,197 +187,12 @@
                     <button (click)="hoanTatKiemTra()">
                     {{ selectedPhieu?.trang_thai === 'Đã duyệt' ? '📩 Cập nhật phản hồi' : '✅ Duyệt phiếu , hoàn tất kiểm tra' }}
                     </button>
+                    <button (click)=" xoaPhieuXuat(p.id)">🗑️ Xoá</button>
 
-                    <button 
-                    [disabled]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
-                    [class.disabled-button]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
-                    (click)="xacNhanNhapKhoChinhThuc()">
-                    ✅ Xác nhận xuất hàng khỏi kho
-                    </button> 
                     </div>
-                    
-
-                    <!-- 📦 POPUP Xác nhận nhập kho -->
-                    <div class="modal" *ngIf="popupNhapKhoMo">
-                    <div class="modal-content wide-modal">
-
-                        <!-- Thông tin phiếu -->
-                        <h3>📦 Xác nhận xuất kho cho phiếu: {{ selectedPhieu.receipt_code }}</h3>
-
-                        <!-- Bộ lọc mã sản phẩm -->
-                        <!-- 🔍 Bộ lọc kiểm tra sản phẩm trùng mã -->
-                        <div class="product-check-section">
-                        <div class="check-row">
-                            <input
-                            [(ngModel)]="maCanKiemTra"
-                            placeholder="🔍 Nhập mã sản phẩm..."
-                            class="filter-input input-field"
-                            />
-                            <button (click)="kiemTraTrongKho()">🔁 Kiểm tra</button>
-                        </div>
-
-                        <div class="check-result">
-                            <ng-container *ngIf="danhSachMaTrung === null">
-                            <em style="color: gray;">💡 Danh sách mã trùng sẽ hiển thị tại đây sau khi kiểm tra.</em>
-                            </ng-container>
-
-                            <ng-container *ngIf="danhSachMaTrung !== null && danhSachMaTrung.length === 0">
-                            <span style="color: green;">✅ Không có sản phẩm nào trùng mã!</span>
-                            </ng-container>
-
-                            <ng-container *ngIf="danhSachMaTrung !== null && danhSachMaTrung.length > 0">
-                            <span style="color: crimson;">❌ Mã sản phẩm đã tồn tại: <strong>{{ danhSachMaTrung.join(', ') }}</strong></span>
-                            </ng-container>
-                        </div>
-                        </div>
-
-
-                        <!-- Kết quả -->
-                        <div *ngIf="ketQuaSanPham !== null" style="margin-top: 20px;">
-                        <table class="detail-table" *ngIf="ketQuaSanPham?.product_code">
-                            <thead>
-                            <tr>
-                                <th>Hình ảnh</th>
-                                <th>Mã SP</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Loại</th>
-                                <th>Đơn giá</th>
-                                <th>Đơn vị</th>
-                                <th>Khối lượng (KG)</th>
-                                <th>Diện tích (m²)</th>
-                                <th>Ngày sản xu</th>
-                                <th>Hạn sử dụng</th>
-                                <th>Số lượng</th>
-                                <th>Thành tiền</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                <img [src]="ketQuaSanPham.image_url" height="40" *ngIf="ketQuaSanPham.image_url" />
-                                </td>
-                                <td class="td-barcode">
-                                <img [src]="'https://barcode.tec-it.com/barcode.ashx?data=' + ketQuaSanPham.product_code + '&code=Code128'" height="40" width="75px" />
-                                </td>
-                                <td>{{ ketQuaSanPham.product_name }}</td>
-                                <td>{{ ketQuaSanPham.product_type }}</td>
-                                <td>{{ ketQuaSanPham.unit_price | number:'1.0-0' }}</td>
-                                <td>{{ ketQuaSanPham.unit }}</td>
-                                <td>{{ ketQuaSanPham.weight }}</td>
-                                <td>{{ ketQuaSanPham.area }}</td>
-                                <td>{{ ketQuaSanPham.manufacture_date | date:'dd/MM/yyyy' }}</td>
-                                <td>{{ ketQuaSanPham.expiry_date | date:'dd/MM/yyyy' }}</td>
-                                <td>{{ ketQuaSanPham.quantity }}</td>
-                                <td>{{ ketQuaSanPham.total_price | number:'1.0-0' }}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Nếu không có -->
-                        <div *ngIf="!ketQuaSanPham.product_code" style="color: crimson; font-weight: bold;">
-                            ❌ Sản phẩm với mã "{{ maCanKiemTra }}" chưa được nhập vào kho!
-                        </div>
-                        </div>
-
-
-                        <!-- Logo và tên nhà cung cấp -->
-                        <div style="display: flex; align-items: center; gap: 20px; margin-top: 10px;" class="supplier-logo">
-                        <div>
-                            <p><strong>🏢 Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }} <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
-                        </div>
-                        </div>
-
-                        <br>
-
-                        <!-- Bảng sản phẩm -->
-                        <table class="detail-table">
-                        <thead>
-                            <tr>
-                            <th>STT</th>
-                            <th>Hình ảnh</th>
-                            <th>Mã SP</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Loại</th>
-                            <th>Khu lưu kho</th>
-                            <th>Đơn giá</th>
-                            <th>Đơn vị</th>
-                            <th>Khối lượng (KG)</th>
-                            <th>Diện tích (m²)</th>
-                            <th>Ngày SX</th>
-                            <th>Hạn SD</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <tr *ngFor="let sp of danhSachSanPhamNhap | filterProductCode:filterCode; let i = index">
-                            <td>{{ i + 1 }}</td>
-                            <td>
-                            <div class="image-upload-cell" style="display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 120px;">
-                                <img [src]="sp.image_url" height="40" *ngIf="sp.image_url" style="max-width: 100%; object-fit: contain;" />
-                                <input type="file" (change)="onFileSelected($event, sp)" style="max-width: 100%;" />
-                            </div>
-                            </td>
-
-                            <!-- Các ô được chỉnh sửa -->
-                            <td>
-                            <img [src]="'https://barcode.tec-it.com/barcode.ashx?data=' + sp.product_code + '&code=Code128&translate-esc=false'" height="40" *ngIf="sp.product_code" />
-                            <br />
-                            <input [(ngModel)]="sp.product_code" (change)="kiemTraTrungMa(sp)" class="input-field"/></td>
-                            <td><input [(ngModel)]="sp.product_name" class="input-field" /></td>
-                            <td><input [(ngModel)]="sp.product_type" (blur)="kiemTraTrungMa(sp)" class="input-field"/></td>
-                            <!-- Phân khu -->
-                            <td>
-                            <select [(ngModel)]="sp.khu_vuc_id" style="width: 160px;">
-                                <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
-                            </select>
-                            </td>
-                            <td>
-                            <input type="number" [(ngModel)]="sp.unit_price" (ngModelChange)="capNhatThanhTien(sp)" style="width: 120px;" />
-                            </td>
-
-                            
-
-                            <!-- Các ô không cho chỉnh sửa -->
-                            <td>{{ sp.unit }}</td>
-                            <td>{{ sp.weight }}</td>
-                            <td>{{ sp.area }}</td>
-                            <td>{{ sp.manufacture_date | date:'dd/MM/yyyy' }}</td>
-                            <td>{{ sp.expiry_date | date:'dd/MM/yyyy' }}</td>
-                            <td>{{ sp.quantity }}</td>
-                            <td>{{ sp.total_price | number:'1.0-0' }}</td>
-
-
-                        </tr>
-                        </tbody>
-                        </table>
-
-                        <!-- Tổng tiền -->
-                        <div class="total-amount" style="margin-top: 15px;">
-                        <strong>💰 Tổng cộng:</strong> {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ
-                        </div>
-
-                        <!-- Nút hành động -->
-                        <!-- Nút hành động --> 
-                        <div class="button-group">
-                        <button 
-                            (click)="xacNhanNhapKhoChinhThuc()"
-                            [disabled]="selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng'"
-                            [ngStyle]="{ opacity: selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng' ? '0.6' : '1' }"
-                        >
-                            ✔️ Nhập kho
-                        </button>
-                        <button (click)="dongPopup()">❌ Đóng</button>
-                        </div>
-                    </div>
-                    </div>
-
                 </div>
             </td>
             </tr>
         </ng-container>
     </table>
-
-    
-
 </div>

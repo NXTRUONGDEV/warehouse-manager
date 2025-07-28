@@ -65,7 +65,7 @@ button {
 }
 
 button:hover {
-  background-color: #388e3c;
+  background-color: #2fa2e4;
 }
 
 .disabled-button {
@@ -155,8 +155,8 @@ button:hover {
 
 /* Nhóm nút */
 .button-group {
-  margin-top: 15px;
-  display: flex;
+  margin-top: 10px;
+  display: fit-content;
   gap: 10px;
 }
 
@@ -375,4 +375,7 @@ textarea {
   .filter-bar-phieu label, .filter-bar-phieu input {
     width: 100%;
   }
+}
+.btn-action {
+  margin-right: 10px;
 }

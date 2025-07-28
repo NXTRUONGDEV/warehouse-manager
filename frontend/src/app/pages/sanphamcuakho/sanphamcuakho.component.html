@@ -78,7 +78,7 @@
         <!-- ✅ Nút thêm vào đơn hàng bên dưới -->
         <div class="text-center mb-3">
           <button class="btn-them-vao-don" (click)="themVaoPhieuMua(sp); $event.stopPropagation()">
-            ➕ Thêm vào phiếu xuất
+            ✅ Chọn sản phẩm
           </button>
         </div>
       </div>
@@ -111,7 +111,7 @@
         <p><strong>Khu vực:</strong> {{ selectedProduct.ten_khu_vuc }}</p>
         <p><strong>Số lượng trong kho:</strong> {{ selectedProduct.quantity }}</p>
         <p><strong>Giá:</strong> {{ selectedProduct.unit_price | number:'1.0-0' }} đ</p>
-        <button class="btn btn-success mt-2" (click)="themVaoPhieuMua(selectedProduct)">➕ Thêm vào phiếu xuất</button>
+        <button class="btn btn-success mt-2" (click)="themVaoPhieuMua(selectedProduct)">✅ Chọn sản phẩm</button>
       </div>
     </div>
   </div>

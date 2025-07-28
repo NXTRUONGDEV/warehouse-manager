@@ -69,7 +69,7 @@ export class MuahangComponent {
       weight_per_unit: 0,
       manufacture_date: '',
       expiry_date: '',
-      quantity: 0,
+      quantity: '',
       unit_price: 0,
       imageFile: null,
       preview: ''
@@ -151,16 +151,6 @@ export class MuahangComponent {
   }
 
   submitForm() {
-    if (!this.userInfo.full_name || !this.userInfo.phone || !this.userInfo.date_of_birth) {
-      alert('❌ Vui lòng cập nhật thông tin cá nhân trước khi đăng ký mua hàng.');
-      return;
-    }
-
-    if (!this.formData.receiver_name || !this.formData.receiver_address) {
-      alert("❌ Vui lòng nhập đầy đủ thông tin nhà cung cấp.");
-      return;
-    }
-
     if (!this.formData.products || this.formData.products.length === 0) {
       alert("❌ Vui lòng thêm ít nhất 1 sản phẩm.");
       return;
@@ -169,19 +159,10 @@ export class MuahangComponent {
     for (let i = 0; i < this.formData.products.length; i++) {
       const p = this.formData.products[i];
 
-      if (!p.product_name || !p.product_type || !p.product_code || !p.unit || !p.weight ||
-          !p.manufacture_date || !p.expiry_date || !p.quantity || !p.unit_price) {
-        alert(`❌ Vui lòng nhập đầy đủ thông tin cho sản phẩm số ${i + 1}.`);
-        return;
-      }
+      
 
-      if (p.weight <= 0 || p.quantity <= 0 || p.unit_price <= 0) {
-        alert(`❌ Trường số phải > 0 (sản phẩm số ${i + 1}).`);
-        return;
-      }
-
-      if (!p.weight_per_unit || p.weight_per_unit <= 0) {
-        alert(`❌ Trọng lượng 1 đơn vị phải > 0 (sản phẩm số ${i + 1}).`);
+      if ( p.quantity <= 0 ) {
+        alert(`❌ Số lượng phải > 0 (sản phẩm số ${i + 1}).`);
         return;
       }
 
@@ -202,8 +183,8 @@ export class MuahangComponent {
 
       const daysDiff = Math.floor((hsd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       if (hsd <= now || daysDiff < 30) {
-        alert(`❌ HSD phải sau ngày hiện tại và còn ít nhất 30 ngày (sản phẩm ${i + 1}).`);
-        return;
+        alert(`Cảnh báo có sản phẩm sắp hết hạn (sản phẩm ${p.product_name}).`);
+        
       }
 
       const today = new Date();
@@ -217,8 +198,12 @@ export class MuahangComponent {
         return;
       } 
     }
-
-    // Chuẩn bị FormData
+this.formData.quantity = this.formData.products.reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0);
+    if (this.formData.quantity <= 0) {
+      alert("❌ Tổng số lượng sản phẩm phải lớn hơn 0.");
+      return;
+    }
+    // FormData
     const form = new FormData();
 
     form.append('created_date', this.formData.created_date);
@@ -231,7 +216,7 @@ export class MuahangComponent {
 
     form.append('staff_account_name', this.userInfo.full_name || '');
     form.append('staff_account_email', this.userEmail || '');
-
+    form.append('quantity', this.formData.quantity || '');
     form.append('delivery_date', this.formData.appointment_date);
     form.append('user_id', this.userId || '');
     form.append('note', this.formData.note || '');
@@ -255,7 +240,6 @@ export class MuahangComponent {
       next: (res) => {
         this.generatedReceiptCode = res.receipt_code;
         alert(`✅ Gửi phiếu thành công!\n📄 Mã phiếu: ${res.receipt_code}`);
-
         // Xoá dữ liệu sau khi gửi
         this.phieuMuaService.clearProducts();
         this.phieuMuaService.clearFormData();

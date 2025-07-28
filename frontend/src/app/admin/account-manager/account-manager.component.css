@@ -47,6 +47,7 @@ table {
 /*thông tin admin*/
 /* === Hồ sơ quản lý (Profile) === */
 .profile-container {
+  
   padding: 20px!important;
   border-radius: 12px;
   padding: 30px;
@@ -67,11 +68,12 @@ table {
 }
 
 .profile-card {
-  display: flex;
+  display: inline-flex;
   gap: 30px;
   margin: 0 25%;
   padding: 25px;
-  background: white;
+  max-width: 800px;
+  background: rgb(84, 211, 194);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -118,10 +120,14 @@ table {
 }
 
 .profile-right {
-  flex: 1;
+flex: 1;
+  min-width: 250px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  word-break: break-word;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .profile-right p {

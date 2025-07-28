@@ -5,12 +5,17 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-
+const thongKeRoutes = require('./routes/thongke');
 const app = express();
+require('./config/db');
+
+
+
+
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
+app.use('/api/thong-ke', thongKeRoutes);
 
 // ✅ Tăng giới hạn body lên 50MB (hoặc cao hơn nếu bạn upload ảnh base64)
 app.use(express.json({ limit: '50mb' }));
@@ -24,7 +29,7 @@ app.use('/uploads', express.static('uploads'));
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '48194007', // đổi nếu cần
+  password: '111111', // đổi nếu cần
   database: 'warehouse_db'
 });
 
@@ -260,9 +265,8 @@ app.post('/api/phieu-nhap', upload.any(), (req, res) => {
       `INSERT INTO phieu_nhap_kho 
         (created_date, supplier_name, supplier_address, logo_url, user_id, total_amount,
          meeting_date, note,
-         staff_account_name, staff_account_email, admin_account_email,
-         representative_name, representative_email, representative_phone)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         staff_account_name, staff_account_email, admin_account_email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         created_date,
         supplier_name,
@@ -1143,7 +1147,7 @@ app.put('/api/products-detail/:id', upload.fields([
 });
 
 
-// ========================== Phiếu nhập ==========================
+// ========================== Phiếu xuất ==========================
 
 //tạo phiếu xuất
 app.post('/api/phieu-xuat', upload.any(), (req, res) => {
@@ -1185,11 +1189,12 @@ app.post('/api/phieu-xuat', upload.any(), (req, res) => {
         logo_url, user_id, total_amount, total_weight,
         delivery_date,
         representative_name, representative_email, representative_phone,
+        quantity,
         staff_account_name, staff_account_email,
         admin_account_name, admin_account_email,
         note
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     `;
 
     const values = [
@@ -1205,6 +1210,7 @@ app.post('/api/phieu-xuat', upload.any(), (req, res) => {
       body.representative_name || '',
       body.representative_email || '',
       body.representative_phone || '',
+      body.quantity || 0,
       body.staff_account_name || '',
       body.staff_account_email || '',
       body.admin_account_name || '',
@@ -1240,11 +1246,13 @@ app.post('/api/phieu-xuat', upload.any(), (req, res) => {
         parseFloat(p.weight || 0),
         parseFloat(p.weight_per_unit || 0),
         p.manufacture_date.split('T')[0],
-        p.expiry_date.split('T')[0],
+        (p.expiry_date || '').split('T')[0],
         parseInt(p.quantity),
         parseFloat(p.unit_price),
         parseFloat(p.quantity) * parseFloat(p.unit_price),
       ]);
+      console.log('📥 Body:', req.body);
+      console.log('📦 Products:', products);
 
       db.query(sqlChiTiet, [chiTietValues], (err2) => {
         if (err2) {
@@ -1298,6 +1306,22 @@ app.put('/api/phieu-xuat/:id/admin-cap-nhat', (req, res) => {
     res.json({ message: 'Cập nhật thành công' });
   });
 });
+//xóa phiếu xuất
+app.delete('/api/phieu-xuat/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = 'DELETE FROM phieu_xuat_kho WHERE id = ?';
+
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error('❌ Lỗi khi xoá phiếu xuất:', err);
+      return res.status(500).json({ error: 'Lỗi khi xoá phiếu xuất' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy phiếu xuất để xoá' });
+    }
+    res.json({ message: '✅ Xoá phiếu xuất thành công!' });
+  });
+});
 
 //kiểm tra đủ số lượng ko
 app.get('/api/products-detail/check-available/:code/:required', async (req, res) => {
@@ -1323,7 +1347,7 @@ app.get('/api/products-detail/check-available/:code/:required', async (req, res)
   }
 });
 
-//trừ số lượng trong kho 
+//xác nhận duyệt phieu xuất kho
 app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
   const id = req.params.id;
 
@@ -1369,7 +1393,7 @@ app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
 
 // ========================== SERVER ==========================
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log('✅ Server chạy tại http://localhost:3000');
 });
 
@@ -1389,21 +1413,7 @@ app.put('/api/phieu-nhap/:id/xuat-hoa-don', (req, res) => {
   });
 });
 
-// Cập nhật đã xuất hóa đơn xuất
-app.put('/api/phieu-xuat/:id/xuat-hoa-don', (req, res) => {
-  const id = req.params.id;
 
-  const sql = 'UPDATE phieu_xuat_kho SET da_xuat_hoa_don = 1 WHERE id = ?';
-
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error('❌ Lỗi khi cập nhật da_xuat_hoa_don (phiếu xuất):', err);
-      return res.status(500).json({ error: 'Lỗi server khi cập nhật trạng thái hóa đơn (phiếu xuất).' });
-    }
-
-    res.json({ success: true, message: '✅ Đã cập nhật trạng thái xuất hóa đơn (phiếu xuất).' });
-  });
-});
 
 //api lấy toàn bộ hóa đơn 
 // 🔧 API: Lấy toàn bộ hóa đơn (phiếu nhập + xuất), chi tiết + người tạo
@@ -1499,6 +1509,57 @@ app.get('/api/hoa-don', (req, res) => {
   });
 });
 
+//Api Tổng phiếu nhập xuất kho
+app.get('/api/tong-phieu-nhap-xuat', (req, res) => {
+  const sql = `
+    SELECT 
+      (SELECT COUNT(*) FROM phieu_nhap_kho) AS tong_phieu_nhap,
+      (SELECT COUNT(*) FROM phieu_xuat_kho) AS tong_phieu_xuat
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('❌ Lỗi truy vấn tổng phiếu nhập xuất:', err);
+      return res.status(500).json({ message: 'Lỗi truy vấn tổng phiếu nhập xuất' });
+    }
+    res.json(results[0]);
+  });
+});
+// Sản phẩm sắp hết tronng kho
+app.get('/api/products-detail/sap-het', (req, res) => {
+  const sql = `
+    SELECT * FROM products_detail 
+    WHERE quantity <= 100 
+    ORDER BY quantity ASC
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('❌ Lỗi truy vấn sản phẩm sắp hết:', err);
+      return res.status(500).json({ message: 'Lỗi truy vấn sản phẩm sắp hết' });
+    }
+    res.json(results);
+  });
+});
+
+// Sane phẩm sắp hết hạn
+app.get('/api/products-detail/sap-het-han', (req, res) => {
+  const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại theo định dạng YYYY-MM-DD
+  const sql = `
+    SELECT * FROM products_detail 
+    WHERE expiry_date IS NOT NULL
+    AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+    ORDER BY expiry_date ASC
+  `;
+
+  db.query(sql, [today], (err, results) => {
+    if (err) {
+      console.error('❌ Lỗi truy vấn sản phẩm sắp hết hạn:', err);
+      return res.status(500).json({ message: 'Lỗi truy vấn sản phẩm sắp hết hạn' });
+    }
+    res.json(results);
+  });
+});
 
 
 

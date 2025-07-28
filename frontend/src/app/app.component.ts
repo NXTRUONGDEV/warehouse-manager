@@ -4,15 +4,16 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { FooterComponent } from './footer/footer.component';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common'; // ✅ THÊM DÒNG NÀY
-
+import { NgChartsModule } from 'ng2-charts';
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule,           // ✅ THÊM VÀO ĐÂY
+    CommonModule,           
     RouterOutlet,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
+    NgChartsModule
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

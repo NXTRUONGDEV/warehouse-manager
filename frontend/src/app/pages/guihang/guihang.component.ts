@@ -127,11 +127,9 @@ submitForm() {
       !p.product_name ||
       !p.product_type ||
       !p.unit ||
-      !p.weight ||
       !p.manufacture_date ||
       !p.expiry_date ||
       !p.quantity ||
-      !p.unit_price ||
       !p.imageFile
     ) {
       alert(`❌ Vui lòng nhập đầy đủ thông tin cho sản phẩm số ${i + 1}.`);
@@ -163,16 +161,16 @@ submitForm() {
   }
 
   // ✅ Cho phép ngày hẹn nhập hàng = ngày tạo
-  if (!this.formData.appointment_date) {
-    alert("❌ Vui lòng chọn ngày hẹn giao hàng.");
-    return;
-  }
+  // if (!this.formData.appointment_date) {
+  //   alert("❌ Vui lòng chọn ngày hẹn giao hàng.");
+  //   return;
+  // }
 
   const form = new FormData();
   form.append('created_date', this.formData.created_date);
   form.append('supplier_name', this.formData.supplier_name);
   form.append('supplier_address', this.formData.supplier_address);
-  form.append('meeting_date', this.formData.appointment_date);
+  form.append('meeting_date', this.formData.appointment_date ||'');
   form.append('note', this.formData.note || '');
   form.append('email', this.userEmail || '');
   form.append('total_amount', this.calculateTotal().toString());

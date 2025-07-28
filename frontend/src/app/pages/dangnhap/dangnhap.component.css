@@ -1,13 +1,12 @@
 
 .container {
-  background-color: beige;
+  border-radius: 15px;
 }
 
 /* login.component.css */
 .contact-us {
   padding: 60px 20px;
   margin-top: 10%;
-  background-color: beige!important;
 }
 
 .auth-box {
@@ -83,7 +82,7 @@
 }
 
 .btn-success {
-  background-color: #28a745;
+  background-color: #49d86a;
   color: #fff;
 }
 
