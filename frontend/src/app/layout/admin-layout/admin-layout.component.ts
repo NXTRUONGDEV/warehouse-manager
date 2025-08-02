@@ -22,7 +22,7 @@ export class AdminLayoutComponent implements OnInit {
 
   soPhieuNhapChoDuyet = 0;
   soPhieuXuatChoDuyet = 0;
-
+  
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {

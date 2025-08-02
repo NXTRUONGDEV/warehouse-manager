@@ -555,6 +555,16 @@ h2, h3, h4 {
   gap: 20px;
 }
 
+.timeline:before {
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    content: " ";
+    width: 3px;
+    background-color: #eeeeee00!important;
+    left: 50%;
+    margin-left: -1.5px;
+}
 
 
 .filter-row {
@@ -614,3 +624,4 @@ h2, h3, h4 {
   font-weight: 500;
   display: inline-block;
 }
+

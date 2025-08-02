@@ -40,24 +40,26 @@ export class QuanlysanphamComponent implements OnInit {
   hienPopupThem = false;
 
   spMoi: any = {
-  product_code: '',
-  product_name: '',
-  product_type: '',
-  unit: '',
-  image_url: 'Chưa có ảnh',
-  quantity: 0,
-  weight: 0,
-  area: 0,
-  unit_price: 0,
-  total_price: 0,
-  manufacture_date: '',
-  expiry_date: '',
-  khu_vuc_id: '',
-  location: '',
-  supplier_name: 'T&H Warehouse Manager',
-  logo_url: 'http://localhost:3000/uploads/logogpt.png',
-  receipt_code: ''
-};
+    product_code: '',
+    product_name: '',
+    product_type: '',
+    unit: '',
+    image_url: 'Chưa có ảnh',
+    quantity: 0,
+    weight: 0,
+    area: 0,
+    unit_price: 0,
+    total_price: 0,
+    manufacture_date: '',
+    expiry_date: '',
+    khu_vuc_id: '',
+    location: '',
+    supplier_name: 'T&H Warehouse Manager',
+    logo_url: 'http://localhost:3000/uploads/logogpt.png',
+    receipt_code: ''
+  };
+
+  danhSachChiTietTheoMa: any[] = [];
 
   constructor(private http: HttpClient) {}
 
@@ -68,25 +70,25 @@ export class QuanlysanphamComponent implements OnInit {
   }
 
   onKhuVucChange() {
-  const params: any = {};
+    const params: any = {};
 
-  if (this.selectedKhuVuc) {
-    params.khu_vuc_id = this.selectedKhuVuc;
-  }
-
-  this.http.get<string[]>('http://localhost:3000/api/products-detail/types', { params }).subscribe({
-    next: (data) => {
-      this.loaiHang = data;
-      this.selectedType = ''; // reset loại khi đổi khu
-    },
-    error: (err) => {
-      console.error('❌ Lỗi lấy loại hàng theo khu vực:', err);
+    if (this.selectedKhuVuc) {
+      params.khu_vuc_id = this.selectedKhuVuc;
     }
-  });
 
-  // Lọc lại danh sách sản phẩm nếu muốn
-  this.layDanhSachSanPham();
-}
+    this.http.get<string[]>('http://localhost:3000/api/products-detail/types', { params }).subscribe({
+      next: (data) => {
+        this.loaiHang = data;
+        this.selectedType = ''; // reset loại khi đổi khu
+      },
+      error: (err) => {
+        console.error('❌ Lỗi lấy loại hàng theo khu vực:', err);
+      }
+    });
+
+    // Lọc lại danh sách sản phẩm nếu muốn
+    this.layDanhSachSanPham();
+  }
 
 
   layDanhSachSanPham() {
@@ -143,147 +145,194 @@ export class QuanlysanphamComponent implements OnInit {
       alert('❌ Lỗi khi xoá sản phẩm: ' + err.message);
     }
   });
-}
+  }
 
 
-  moPopupThemSanPham() {
-  this.hienPopupThem = true;
-}
+    moPopupThemSanPham() {
+    this.hienPopupThem = true;
+  }
 
-dongPopupThem() {
-  this.hienPopupThem = false;
-}
+  dongPopupThem() {
+    this.hienPopupThem = false;
+  }
 
-chonFileAnh(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    this.spMoi.image = file; // Gửi file thật lên backend
+  chonFileAnh(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.spMoi.image = file; // Gửi file thật lên backend
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.previewAnh = reader.result as string;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewAnh = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  chonFileLogo(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.spMoi.logo = file; // Gửi file thật lên backend
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewLogo = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  themSanPham() {
+    const formData = new FormData();
+
+    console.log('Dữ liệu spMoi:', this.spMoi);
+    
+    Object.keys(this.spMoi).forEach(key => {
+      const val = this.spMoi[key];
+      if (val !== undefined && typeof val !== 'object') {
+        formData.append(key, val);
+      }
+    });
+
+    if (this.fileAnh) formData.append('image', this.fileAnh);
+    if (this.fileLogo) formData.append('logo', this.fileLogo);
+
+    this.http.post('http://localhost:3000/api/products-detail', formData).subscribe({
+      next: () => {
+        alert('✅ Nhập thành công!');
+        this.hienPopupThem = false;
+        this.fileAnh = null;
+        this.fileLogo = null;
+        this.previewAnh = null;
+        this.previewLogo = null;
+        this.spMoi = {};
+        this.layDanhSachSanPham();
+      },
+      error: err => {
+        console.error('Lỗi khi gọi API:', err);
+        alert('❌ Lỗi: ' + (err.error?.error || err.message));
+      }
+    });
+  }
+
+  moPopupCapNhat(sp: any) {
+    this.sanPhamCapNhat = {
+      ...sp,
+      manufacture_date: sp.manufacture_date?.split('T')[0],
+      expiry_date: sp.expiry_date?.split('T')[0],
+
+      // Gán mặc định nếu thiếu
+      weight_per_unit: sp.weight_per_unit ?? 1, // nếu null thì gán 1kg
+      area_per_unit: sp.area_per_unit ?? (2 / 500), // mặc định 2m² cho 500kg
     };
-    reader.readAsDataURL(file);
+
+    this.previewAnh = sp.image_url;
+    this.previewLogo = sp.logo_url;
+    this.hienPopupCapNhat = true;
+
+    // 🆕 Gọi API lấy danh sách dòng sản phẩm theo mã
+    this.http.get<any[]>(`http://localhost:3000/api/products-detail/by-code/${sp.product_code}`)
+      .subscribe({
+        next: (data) => {
+          this.danhSachChiTietTheoMa = data;
+
+          // ✅ Gọi tính khối lượng tổng sau khi có dữ liệu chi tiết
+          this.capNhatTongKhoiLuong();
+        },
+        error: (err) => {
+          console.error('❌ Lỗi lấy chi tiết theo mã:', err);
+          this.danhSachChiTietTheoMa = [];
+        }
+      });
   }
-}
 
-chonFileLogo(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    this.spMoi.logo = file; // Gửi file thật lên backend
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.previewLogo = reader.result as string;
-    };
-    reader.readAsDataURL(file);
+  dongPopupCapNhat() {
+    this.hienPopupCapNhat = false;
   }
-}
 
-themSanPham() {
-  const formData = new FormData();
+  chonFileAnhCapNhat(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.fileAnh = file;
 
-  console.log('Dữ liệu spMoi:', this.spMoi);
-  
-  Object.keys(this.spMoi).forEach(key => {
-    const val = this.spMoi[key];
-    if (val !== undefined && typeof val !== 'object') {
-      formData.append(key, val);
-    }
-  });
-
-  if (this.fileAnh) formData.append('image', this.fileAnh);
-  if (this.fileLogo) formData.append('logo', this.fileLogo);
-
-  this.http.post('http://localhost:3000/api/products-detail', formData).subscribe({
-    next: () => {
-      alert('✅ Nhập thành công!');
-      this.hienPopupThem = false;
-      this.fileAnh = null;
-      this.fileLogo = null;
-      this.previewAnh = null;
-      this.previewLogo = null;
-      this.spMoi = {};
-      this.layDanhSachSanPham();
-    },
-    error: err => {
-      console.error('Lỗi khi gọi API:', err);
-      alert('❌ Lỗi: ' + (err.error?.error || err.message));
-    }
-  });
-}
-
-moPopupCapNhat(sp: any) {
-  this.sanPhamCapNhat = {
-    ...sp,
-    manufacture_date: sp.manufacture_date?.split('T')[0], // lấy "YYYY-MM-DD"
-    expiry_date: sp.expiry_date?.split('T')[0]
-  };
-  this.previewAnh = sp.image_url;
-  this.previewLogo = sp.logo_url;
-  this.hienPopupCapNhat = true;
-}
-
-
-dongPopupCapNhat() {
-  this.hienPopupCapNhat = false;
-}
-
-chonFileAnhCapNhat(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    this.fileAnh = file;
-
-    const reader = new FileReader();
-    reader.onload = e => this.previewAnh = reader.result as string;
-    reader.readAsDataURL(file);
-  }
-}
-
-chonFileLogoCapNhat(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    this.fileLogo = file;
-
-    const reader = new FileReader();
-    reader.onload = e => this.previewLogo = reader.result as string;
-    reader.readAsDataURL(file);
-  }
-}
-
-
-// 👉 Hàm cập nhật sản phẩm
-capNhatSanPham() {
-  const formData = new FormData();
-  const sp = this.sanPhamCapNhat;
-
-  // Gửi các trường text
-  Object.keys(sp).forEach(key => {
-    const val = sp[key];
-    if (val !== undefined && typeof val !== 'object') {
-      formData.append(key, val);
-    }
-  });
-
-  // Gửi file nếu có
-  if (this.fileAnh) formData.append('image', this.fileAnh);
-  if (this.fileLogo) formData.append('logo', this.fileLogo);
-
-  // Gửi request PUT đến backend
-  this.http.put(`http://localhost:3000/api/products-detail/${sp.id}`, formData).subscribe({
-    next: () => {
-      alert('✅ Cập nhật thành công!');
-      this.dongPopupCapNhat();
-      this.layDanhSachSanPham();
-    },
-    error: err => {
-    if (err.status === 400 && err.error?.error) {
-      alert(err.error.error); // hiện: ⚠️ Mã sản phẩm đã tồn tại!
-    } else {
-      alert('❌ Lỗi: ' + err.message);
+      const reader = new FileReader();
+      reader.onload = e => this.previewAnh = reader.result as string;
+      reader.readAsDataURL(file);
     }
   }
-  });
-}
+
+  chonFileLogoCapNhat(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.fileLogo = file;
+
+      const reader = new FileReader();
+      reader.onload = e => this.previewLogo = reader.result as string;
+      reader.readAsDataURL(file);
+    }
+  }
+
+
+  // 👉 Hàm cập nhật sản phẩm
+  capNhatSanPham() {
+    const formData = new FormData();
+    const sp = this.sanPhamCapNhat;
+
+    Object.keys(sp).forEach(key => {
+      const val = sp[key];
+      if (val !== undefined && typeof val !== 'object') {
+        formData.append(key, val);
+      }
+    });
+
+    if (this.fileAnh) formData.append('image', this.fileAnh);
+    if (this.fileLogo) formData.append('logo', this.fileLogo);
+
+    this.http.put(`http://localhost:3000/api/products-detail/${sp.id}`, formData).subscribe({
+      next: () => {
+        alert('✅ Cập nhật thành công!');
+        this.dongPopupCapNhat();
+        this.layDanhSachSanPham();
+      },
+      error: err => {
+        alert(err.error?.error || '❌ Lỗi: ' + err.message);
+      }
+    });
+  }
+
+  // ✅ Cập nhật số lượng từng dòng (pallet)
+  capNhatSoLuongTheoDong(dong: any) {
+    this.http.put(`http://localhost:3000/api/products-detail/update-quantity/${dong.id}`, {
+      quantity: dong.quantity
+    }).subscribe({
+      next: () => alert('✅ Đã cập nhật số lượng!'),
+      error: err => alert('❌ Lỗi cập nhật: ' + err.message)
+    });
+  }
+
+  // Hiển thị giá không có phần thập phân nếu là số tròn
+  hienThiGia(gia: number | string): string {
+    const giaSo = typeof gia === 'string' ? parseFloat(gia) : gia;
+    return Number.isInteger(giaSo) ? giaSo.toString() : giaSo.toFixed(2);
+  }
+
+  capNhatTongKhoiLuong() {
+    const weightPerUnit = Number(this.sanPhamCapNhat.weight_per_unit) || 0;
+    const totalQuantity = this.danhSachChiTietTheoMa.reduce((sum, dong) => sum + Number(dong.quantity || 0), 0);
+
+    const totalWeight = totalQuantity * weightPerUnit;
+    const area = +(totalWeight * 0.004).toFixed(1); // 0.004 = 2 / 500
+
+    console.log('👉 Tổng SL:', totalQuantity);
+    console.log('👉 Tổng khối lượng:', totalWeight, 'kg');
+    console.log('👉 Diện tích tính được:', area, 'm²');
+
+    this.sanPhamCapNhat.weight = +totalWeight.toFixed(1);
+    this.sanPhamCapNhat.area = area;
+  }
+
+
+
 
 }

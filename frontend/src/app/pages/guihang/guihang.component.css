@@ -310,3 +310,90 @@ table td input {
   font-size: 14px;
   background: #fff;
 }
+
+.add-section {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.existing-product-box, .new-product-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+input#maSanPhamCanThem {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 160px;
+}
+
+.btn-add {
+  background-color: #2e8b57;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background-color: #256d45;
+}
+
+/* ✅ Xoá viền và nền các input readonly */
+input.readonly-field[readonly] {
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-weight: 500;
+  cursor: default;
+  padding-left: 4px;
+}
+
+.form-container {
+  padding: 10px 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: center; /* căn giữa tiêu đề theo ngang */
+  align-items: center;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* Tiêu đề căn giữa */
+.header-top h2 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+  text-align: center;
+  flex-grow: 1; /* để chiếm hết chỗ có thể */
+}
+
+/* Nút tạo lại nằm bên phải, cách tiêu đề */
+.btn-reset {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.btn-reset:hover {
+  background-color: #d32f2f;
+}

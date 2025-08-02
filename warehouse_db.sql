@@ -1,6 +1,8 @@
 CREATE DATABASE warehouse_db;
 USE warehouse_db;
 
+SHOW COLUMNS FROM phieu_xuat_kho;
+
 -- Phần bảng cho tài khoản , thông tin tài khoản
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -128,7 +130,7 @@ DROP TABLE IF EXISTS phieu_nhap_kho;
 CREATE TABLE phieu_xuat_kho (
   id INT AUTO_INCREMENT PRIMARY KEY,                     -- Mã ID tự tăng
   receipt_code VARCHAR(50) UNIQUE,                       -- Mã phiếu xuất (ví dụ: PXK20250703-001)
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,              -- Ngày tạo phiếu
+  created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
   receiver_name VARCHAR(255) NOT NULL,                   -- Tên người nhận hàng
   receiver_address TEXT,                                 -- Địa chỉ nhận hàng
   logo_url TEXT,                                         -- Logo đơn vị nhận hàng (nếu có)
@@ -160,6 +162,7 @@ CREATE TABLE phieu_xuat_kho (
   ) DEFAULT 'Đã gửi phiếu',                                -- Trạng thái phiếu
   
   da_xuat_hoa_don BOOLEAN DEFAULT false,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,              -- Ngày tạo phiếu
 
   FOREIGN KEY (user_id) REFERENCES users(id)             -- Liên kết với người dùng
 );
@@ -184,10 +187,6 @@ CREATE TABLE phieu_xuat_kho_chi_tiet (
 
   FOREIGN KEY (phieu_xuat_kho_id) REFERENCES phieu_xuat_kho(id) ON DELETE CASCADE
 );
-
-UPDATE phieu_nhap_kho
-SET trang_thai = 'Đã duyệt'
-WHERE id = 1;
 
 select * from phieu_xuat_kho ;
 select * from phieu_xuat_kho_chi_tiet;
@@ -253,6 +252,7 @@ VALUES
 ('Thiết bị điện tử', 'Các thiết bị công nghệ, điện tử'),
 ('Đồ dùng gia đình', 'Nồi niêu, nước lau nhà, nước rửa chén, vật dụng gia đình');
 
+
 /*Bảng danh sách sản phẩm*/
 CREATE TABLE products_detail (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -292,6 +292,22 @@ CREATE TABLE products_detail (
   logo_url TEXT                               -- Logo nhà cung cấp
 );
 
+ALTER TABLE products_detail ADD is_checking BOOLEAN DEFAULT 0;
+
+SELECT id, product_code, is_checking FROM products_detail;
+
+-- Reset tất cả đang kiểm kê về 0
+UPDATE products_detail 
+SET is_checking = 0 
+WHERE is_checking = 1 AND id > 0;
+
+delete from products_detail where id between 234 and 235;
+
+UPDATE phieu_nhap_kho
+SET trang_thai = 'Đã duyệt'
+WHERE id = 2;
+
+select * from products_detail;
 
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
@@ -404,3 +420,66 @@ ORDER BY kv.id ASC, pd.import_date DESC;
 SHOW TRIGGERS;
 SHOW TRIGGERS LIKE 'user_info';
 DROP TRIGGER IF EXISTS sync_name_from_fullname;
+
+CREATE TABLE location_transfer_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(100),
+  from_location VARCHAR(50),
+  to_location VARCHAR(50),
+  user_email VARCHAR(100),
+  transfer_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+   
+CREATE TABLE log_tru_hang (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  product_code VARCHAR(50),
+  pallet_name VARCHAR(50),
+  quantity_deducted INT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  phieu_xuat_id INT
+);
+
+
+-- Bảng lưu thông tin đợt kiểm kê
+CREATE TABLE kiem_ke_dot (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ma_dot VARCHAR(50) NOT NULL UNIQUE,           -- Mã đợt kiểm kê tự động (ví dụ: KK001_27072025)
+  ten_dot VARCHAR(255) NOT NULL,                -- Tên đợt do Admin nhập (ví dụ: "Kiểm kê Quý 3/2025")
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_by_email VARCHAR(255)                 -- Email người tạo đợt kiểm kê (Admin)
+);
+
+ALTER TABLE kiem_ke_dot ADD COLUMN status VARCHAR(20) DEFAULT 'dang_kiem';
+
+
+-- Bảng lưu chi tiết các sản phẩm trong từng đợt kiểm kê
+CREATE TABLE kiem_ke_chi_tiet (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  dot_id INT NOT NULL,                     -- ID của đợt kiểm kê (khóa ngoại tới kiem_ke_dot)
+  product_detail_id INT NOT NULL,          -- ID của sản phẩm cần kiểm (khóa ngoại tới products_detail.id)
+  actual_quantity INT,                     -- Số lượng thực tế nhân viên đã đếm
+  checked_by_email VARCHAR(255),           -- Email của nhân viên đã thực hiện kiểm đếm và lưu (tùy chọn)
+  ghi_chu TEXT,                            -- Ghi chú bổ sung (tùy chọn)
+  checked_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- Thời điểm nhân viên kiểm đếm (có thể trùng với updated_at nếu lưu lần đầu)
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Thời điểm cập nhật cuối cùng
+  
+  -- Ràng buộc khóa ngoại
+  FOREIGN KEY (dot_id) REFERENCES kiem_ke_dot(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_detail_id) REFERENCES products_detail(id) ON DELETE CASCADE,
+  
+  -- Đảm bảo mỗi sản phẩm chỉ xuất hiện một lần trong một đợt kiểm kê duy nhất
+  UNIQUE (dot_id, product_detail_id)       
+);
+
+select * from kiem_ke_chi_tiet;
+
+drop table kiem_ke_chi_tiet;
+drop table kiem_ke_dot;
+
+-- Bảng `products_detail` của bạn có thể cần thêm cột `is_checking` (hoặc tương tự)
+-- để đánh dấu sản phẩm đang trong quá trình kiểm kê hay không.
+-- Tuy nhiên, trong quy trình mới này, việc theo dõi is_checking sẽ nằm trong kiem_ke_chi_tiet.
+-- Nếu bạn vẫn muốn dùng is_checking trên products_detail, bạn sẽ cần cập nhật nó.
+-- Mình sẽ không dùng is_checking trên products_detail trong các ví dụ code dưới đây để đơn giản hóa.
+
+

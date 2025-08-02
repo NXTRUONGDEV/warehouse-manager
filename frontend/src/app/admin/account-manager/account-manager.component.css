@@ -69,7 +69,6 @@ table {
 .profile-card {
   display: flex;
   gap: 30px;
-  margin: 0 25%;
   padding: 25px;
   background: white;
   border-radius: 16px;
@@ -347,3 +346,71 @@ table {
   min-width: 160px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 700px;
+  width: 90%;
+  animation: fadeInScale 0.3s ease-in-out;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.profile-container .title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.profile-card {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.profile-left {
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #dee2e6;
+}
+
+.profile-right {
+  flex-grow: 1;
+  font-size: 1rem;
+  color: #34495e;
+}
+
+.profile-right p {
+  margin: 6px 0;
+}

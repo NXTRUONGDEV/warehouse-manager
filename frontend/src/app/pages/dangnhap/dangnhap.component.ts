@@ -44,7 +44,7 @@ login() {
       sessionStorage.setItem('id', res.id.toString());
 
      if (res.role === 'admin') {
-        this.router.navigate(['/admin/dashboard']);
+        this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
       } else {
         this.router.navigate(['/home']).then(() => window.location.reload());
       }

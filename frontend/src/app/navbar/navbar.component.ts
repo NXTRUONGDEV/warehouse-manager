@@ -14,6 +14,8 @@ export class NavbarComponent implements OnInit {
   isLoggedIn: boolean = false;
   soHoaDon: number = 0;
 
+  canhBaoKiemKe: boolean = false;
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -21,28 +23,23 @@ export class NavbarComponent implements OnInit {
     this.isLoggedIn = !!sessionStorage.getItem('token');
 
     if (userId) {
-      // Lấy tên người dùng
       this.http.get<any>(`http://localhost:3000/api/users/${userId}`).subscribe({
-        next: (data) => {
-          this.userName = data.name?.trim() || 'Người dùng';
-        },
-        error: (err) => {
-          console.error('❌ Lỗi khi lấy tên người dùng:', err);
-          this.userName = 'Người dùng';
-        }
+        next: (data) => this.userName = data.name?.trim() || 'Người dùng',
+        error: () => this.userName = 'Người dùng'
       });
 
-      // ✅ Gọi API tổng hợp hóa đơn và đếm số cần cảnh báo (!da_xuat_hoa_don)
+      // ✅ Kiểm tra hóa đơn chưa xuất
       this.http.get<any[]>(`http://localhost:3000/api/hoa-don/${userId}`).subscribe({
-        next: (data) => {
-          this.soHoaDon = data.filter(p => p.trang_thai === 'Đã duyệt' && !p.da_xuat_hoa_don).length;
-        },
-        error: (err) => {
-          console.error('❌ Lỗi khi lấy hóa đơn:', err);
-        }
+        next: (data) => this.soHoaDon = data.filter(p => p.trang_thai === 'Đã duyệt' && !p.da_xuat_hoa_don).length,
+        error: () => {}
       });
-    } else {
-      this.userName = 'Người dùng';
+
+      // ✅ Gọi API kiểm kê chưa làm
+      this.http.get<{ count: number }>('http://localhost:3000/api/kiem-ke/chua-kiem')
+        .subscribe({
+          next: res => this.canhBaoKiemKe = res.count > 0,
+          error: err => console.warn('❌ Lỗi kiểm tra kiểm kê:', err)
+        });
     }
   }
 

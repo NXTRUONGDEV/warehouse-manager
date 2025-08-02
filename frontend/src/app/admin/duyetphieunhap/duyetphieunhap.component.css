@@ -64,6 +64,7 @@ button {
   transition: background-color 0.2s ease-in-out;
 }
 
+
 button:hover {
   background-color: #388e3c;
 }
@@ -79,7 +80,6 @@ button:hover {
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-  max-width: 1234px;
 }
 
 /* Thông tin */
@@ -155,8 +155,8 @@ button:hover {
 
 /* Nhóm nút */
 .button-group {
-  margin-top: 15px;
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -474,4 +474,50 @@ textarea {
 .pallet-selected {
   background-color: gold;
   border: 2px dashed #555;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+.switch input { display: none; }
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.scroll-x {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.scroll-x::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-x::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
 }

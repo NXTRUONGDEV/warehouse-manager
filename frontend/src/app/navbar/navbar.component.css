@@ -180,3 +180,22 @@
   font-weight: bold;
   z-index: 10;
 }
+
+.kiemke-badge {
+  position: absolute;
+  top: 2px;        /* Sát lên trên hơn */
+  right: -2px;     /* Đẩy qua phải hơn tí nữa */
+  width: 16px;
+  height: 16px;
+  background-color: red;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}

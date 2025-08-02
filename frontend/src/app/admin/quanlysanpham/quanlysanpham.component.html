@@ -1,6 +1,6 @@
 <div class="main-panel">
 
-  <h2>Quản lý sản phẩm</h2>
+  <h1>Quản lý sản phẩm</h1>
 
   <!-- Bộ lọc nâng cao -->
   <div class="filter-bar">
@@ -14,7 +14,7 @@
 
     <div class="filter-group">
       <label>Tìm kiếm:</label>
-      <input type="text" [(ngModel)]="keyword" placeholder="🔍 Mã hoặc tên sản phẩm" />
+      <input type="text" [(ngModel)]="keyword" placeholder=" Mã hoặc tên sản phẩm" />
     </div>
 
     <div class="filter-group">
@@ -26,12 +26,12 @@
     </div>
 
     <div class="filter-group">
-      <label>📅 Ngày nhập:</label>
+      <label>Ngày nhập:</label>
       <input id="fromDate" type="date" [(ngModel)]="fromDate" />
     </div>
 
     <div class="filter-group">
-      <label>⏳ Hạn sử dụng:</label>
+      <label>Hạn sử dụng:</label>
       <input id="toDate" type="date" [(ngModel)]="toDate" />
     </div>
 
@@ -46,14 +46,9 @@
   </div>
 
     <div class="filter-group full">
-      <button (click)="layDanhSachSanPham()">🔍 Lọc sản phẩm</button>
+      <button (click)="layDanhSachSanPham()"> Lọc sản phẩm</button>
     </div>
   </div>
-
- <!-- Nút Thêm sản phẩm nằm sát góc phải -->
-    <div class="them-moi-wrapper">
-      <button class="btn-them-sp" (click)="hienPopupThem = true">➕ Thêm sản phẩm</button>
-    </div>
 
     <!-- Popup thêm sản phẩm -->
     <!-- Popup thêm sản phẩm -->
@@ -127,18 +122,18 @@
   <!-- Bảng dữ liệu -->
   <!-- Bảng dữ liệu -->
     <table class="product-table">
-    <thead>
+    <thead class="sticky">
         <tr>
-        <th>🖼️ Hình</th>
-        <th>📦 Mã sản phẩm</th>
-        <th>📝 Tên sản phẩm</th>
-        <th>📂 Loại</th>
-        <th>🔢 Tổng số lượng</th>
-        <th>⏳ Hạn sử dụng</th>
-        <th>💰 Giá</th>
-        <th>🏬 Khu vực</th>
-        <th>📅 Ngày nhập</th>
-        <th>⚙️ Thao tác</th>
+        <th> Hình</th>
+        <th> Mã sản phẩm</th>
+        <th> Tên sản phẩm</th>
+        <th> Loại</th>
+        <th> Tổng số lượng</th>
+        <th> Hạn sử dụng</th>
+        <th> Giá</th>
+        <th> Khu vực</th>
+        <th> Ngày nhập</th>
+        <th> Thao tác</th>
         </tr>
     </thead>
     <tbody>
@@ -170,7 +165,7 @@
 
     <!-- Popup chi tiết sản phẩm -->
     <div class="popup" *ngIf="hienPopupChiTiet">
-    <h3>📦 Chi tiết sản phẩm</h3>
+    <h3>Chi tiết sản phẩm</h3>
     <button class="close-btn" (click)="dongPopup()">✖</button>
 
     <div class="popup-content">
@@ -192,7 +187,7 @@
 
         <div class="right">
         <div class="section">
-            <h4>📝 Thông tin sản phẩm</h4>
+            <h4>Thông tin sản phẩm</h4>
             <p><strong>Mã SP:</strong> {{ sanPhamDuocChon.product_code }}</p>
             <p><strong>Tên SP:</strong> {{ sanPhamDuocChon.product_name }}</p>
             <p><strong>Loại hàng:</strong> {{ sanPhamDuocChon.product_type }}</p>
@@ -203,22 +198,24 @@
         </div>
 
         <div class="section">
-            <h4>📐 Thông số kỹ thuật</h4>
-            <p><strong>Khối lượng:</strong> {{ sanPhamDuocChon.weight }} kg</p>
-            <p><strong>Diện tích:</strong> {{ sanPhamDuocChon.area }} m²</p>
-            <p><strong>Giá mỗi đơn vị:</strong> {{ sanPhamDuocChon.unit_price | number }}</p>
-            <p><strong>Thành tiền:</strong> {{ sanPhamDuocChon.total_price | number }}</p>
+          <h4> Thông số kỹ thuật</h4>
+          <p><strong>Khối lượng:</strong> {{ sanPhamDuocChon.weight | number:'1.1-1' }} kg</p>
+          <p><strong>Khối lượng mỗi đơn vị:</strong> {{ sanPhamDuocChon.weight_per_unit | number:'1.1-1' }} kg</p>
+          <p><strong>Diện tích:</strong> {{ sanPhamDuocChon.area | number:'1.1-1' }} m²</p>
+          <p><strong>Giá mỗi đơn vị:</strong> {{ sanPhamDuocChon.unit_price | number:'1.0-0' }}</p>
+          <p><strong>Thành tiền:</strong> {{ sanPhamDuocChon.total_price | number:'1.0-0' }}</p>
         </div>
 
+
+
         <div class="section">
-            <h4>🏬 Kho & nhập hàng</h4>
+            <h4> Kho & nhập hàng</h4>
             <p><strong>Khu vực:</strong> {{ sanPhamDuocChon.ten_khu_vuc }}</p>
-            <p><strong>Vị trí kho:</strong> {{ sanPhamDuocChon.location }}</p>
             <p><strong>Ngày nhập:</strong> {{ sanPhamDuocChon.import_date | date }}</p>
         </div>
 
         <div class="section supplier">
-            <h4>🤝 Nhà cung cấp</h4>
+            <h4> Nhà cung cấp</h4>
             <div class="supplier-info">
             <span>{{ sanPhamDuocChon.supplier_name }}</span>
             <img *ngIf="sanPhamDuocChon.logo_url" [src]="sanPhamDuocChon.logo_url" />
@@ -229,64 +226,145 @@
     </div>
 
     <!-- Popup cập nhật sản phẩm -->
-     <div class="popup-overlay" *ngIf="hienPopupCapNhat" (click)="dongPopupCapNhat()"></div>
-<div class="popup" *ngIf="hienPopupCapNhat">
-  <h3>✏️ Cập nhật sản phẩm</h3>
-  <button class="close-btn" (click)="dongPopupCapNhat()">✖</button>
+    <div class="popup-overlay" *ngIf="hienPopupCapNhat" (click)="dongPopupCapNhat()"></div>
+    <div class="popup" *ngIf="hienPopupCapNhat">
+      <h3>Cập nhật sản phẩm</h3>
+      <button class="close-btn" (click)="dongPopupCapNhat()">✖</button>
 
-  <form (submit)="capNhatSanPham()">
-    <div class="form-grid">
-      <label>Mã sản phẩm:</label>
-      <input [(ngModel)]="sanPhamCapNhat.product_code" name="ma" required />
+      <form (submit)="capNhatSanPham()">
+        
+        <!-- 🔹 THÔNG TIN CHUNG -->
+        <fieldset class="section">
+          <legend>Thông tin chung</legend>
+          <div class="form-grid">
+            <label>Mã sản phẩm:</label>
+            <input [(ngModel)]="sanPhamCapNhat.product_code" name="ma" required />
 
-      <label>Tên sản phẩm:</label>
-      <input [(ngModel)]="sanPhamCapNhat.product_name" name="ten" required />
+            <label>Tên sản phẩm:</label>
+            <input [(ngModel)]="sanPhamCapNhat.product_name" name="ten" required />
 
-      <label>Loại hàng:</label>
-      <input [(ngModel)]="sanPhamCapNhat.product_type" name="loai" required />
+            <label>Loại hàng:</label>
+            <input [(ngModel)]="sanPhamCapNhat.product_type" name="loai" required />
 
-      <label>Đơn vị:</label>
-      <input [(ngModel)]="sanPhamCapNhat.unit" name="donvi" />
+            <label>Đơn vị:</label>
+            <input [(ngModel)]="sanPhamCapNhat.unit" name="donvi" />
+          </div>
+        </fieldset>
 
-      <label>Số lượng:</label>
-      <input type="number" [(ngModel)]="sanPhamCapNhat.quantity" name="soluong" />
+        <!-- 🔹 THÔNG SỐ KỸ THUẬT -->
+        <fieldset class="section">
+          <legend> Thông số kỹ thuật</legend>
+          <div class="form-grid">
 
-      <label>Khối lượng:</label>
-      <input type="number" [(ngModel)]="sanPhamCapNhat.weight" name="kl" />
+            <!-- Khối lượng (readonly) -->
+            <label>Khối lượng (kg):</label>
+            <input 
+              type="text"
+              [value]="sanPhamCapNhat.weight | number:'1.1-1'" 
+              readonly
+            />
 
-      <label>Diện tích:</label>
-      <input type="number" [(ngModel)]="sanPhamCapNhat.area" name="dt" />
+            <!-- Diện tích (readonly) -->
+            <label>Diện tích (m²):</label>
+            <input 
+              type="text"
+              [value]="sanPhamCapNhat.area | number:'1.1-1'" 
+              readonly
+            />
 
-      <label>Ngày sản xuất:</label>
-      <input type="date" [(ngModel)]="sanPhamCapNhat.manufacture_date" name="nsx" />
+            <!-- Khối lượng mỗi đơn vị -->
+            <label>Khối lượng mỗi đơn vị (kg):</label>
+            <input 
+              type="number" 
+              step="0.1"
+              [(ngModel)]="sanPhamCapNhat.weight_per_unit"
+              name="weight_per_unit"
+              (ngModelChange)="capNhatTongKhoiLuong()" />
 
-      <label>Hạn sử dụng:</label>
-      <input type="date" [(ngModel)]="sanPhamCapNhat.expiry_date" name="hsd" />
 
-      <label>Giá mỗi đơn vị:</label>
-      <input type="number" [(ngModel)]="sanPhamCapNhat.unit_price" name="gia" />
+            <!-- Giá mỗi đơn vị -->
+            <label>Giá mỗi đơn vị (VNĐ):</label>
+            <input 
+              type="number" 
+              step="1000"
+              [(ngModel)]="sanPhamCapNhat.unit_price"
+              name="gia"
+            />
 
-      <label>Khu vực:</label>
-      <select [(ngModel)]="sanPhamCapNhat.khu_vuc_id" name="khuvuc">
-        <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
-      </select>
+            <!-- Ngày sản xuất -->
+            <label>Ngày sản xuất:</label>
+            <input type="date" [(ngModel)]="sanPhamCapNhat.manufacture_date" name="nsx" />
 
-      <label>Ảnh sản phẩm:</label>
-      <input type="file" (change)="chonFileAnhCapNhat($event)" />
-      <img *ngIf="previewAnh" [src]="previewAnh" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+            <!-- Hạn sử dụng -->
+            <label>Hạn sử dụng:</label>
+            <input type="date" [(ngModel)]="sanPhamCapNhat.expiry_date" name="hsd" />
+          </div>
+        </fieldset>
 
-      <label>Tên nhà cung cấp:</label>
-      <input [(ngModel)]="sanPhamCapNhat.supplier_name" name="ncc" />
 
-      <label>Logo NCC:</label>
-      <input type="file" (change)="chonFileLogoCapNhat($event)" />
-      <img *ngIf="previewLogo" [src]="previewLogo" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+        <!-- 🔹 BẢNG CÁC VỊ TRÍ LƯU (PALLET) -->
+        <fieldset class="section mt-4">
+          <legend> Vị trí lưu trữ theo khu vực</legend>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Vị trí</th>
+                <th>Khu vực</th>
+                <th>Số lượng</th>
+                <th>Chỉnh sửa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let dong of danhSachChiTietTheoMa">
+                <td>{{ dong.location }}</td>
+                <td>{{ dong.ten_khu_vuc }}</td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="dong.quantity" 
+                    name="quantity_{{dong.id}}" 
+                    (ngModelChange)="capNhatTongKhoiLuong()" />
+                </td>
+                <td>
+                  <button type="button" (click)="capNhatSoLuongTheoDong(dong)">💾 Lưu</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 🔁 Hiển thị khối lượng và diện tích tính tự động -->
+          <div class="mt-3">
+            <strong> Tổng khối lượng:</strong> {{ sanPhamCapNhat.weight | number:'1.1-1' }} kg &nbsp; |
+            <strong> Tổng diện tích:</strong> {{ sanPhamCapNhat.area | number:'1.1-1' }} m²
+          </div>
+        </fieldset>
+
+
+
+        <!-- 🔹 ẢNH SẢN PHẨM & NCC -->
+        <fieldset class="section">
+          <legend> Hình ảnh & Nhà cung cấp</legend>
+          <div class="form-grid">
+            <label>Ảnh sản phẩm:</label>
+            <input type="file" (change)="chonFileAnhCapNhat($event)" />
+            <img *ngIf="previewAnh" [src]="previewAnh" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+
+            <label>Tên nhà cung cấp:</label>
+            <input [(ngModel)]="sanPhamCapNhat.supplier_name" name="ncc" />
+
+            <label>Logo NCC:</label>
+            <input type="file" (change)="chonFileLogoCapNhat($event)" />
+            <img *ngIf="previewLogo" [src]="previewLogo" width="120" style="border: 1px solid #ccc; border-radius: 8px;" />
+          </div>
+        </fieldset>
+
+        
+        <!-- 🔹 NÚT LƯU -->
+        <div class="text-end mt-3">
+          <button class="btn-luu" type="submit"> Hoàn tất cập nhật</button>
+        </div>
+      </form>
     </div>
-
-    <button class="btn-luu" type="submit">💾 Cập nhật</button>
-  </form>
-</div>
-
 
 
 </div>

@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // ⬅️ Thêm dòng này
 import html2pdf from 'html2pdf.js';
 import JsBarcode from 'jsbarcode';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-hoadon',
@@ -115,6 +117,13 @@ ngOnInit(): void {
       'Đã duyệt',
       'Đã nhập hàng vào kho'
     ];
+    const currentStepIndex = steps.indexOf(trangThai);
+    const thisStepIndex = steps.indexOf(step);
+    return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
+  }
+
+   getStepClassXuat(trangThai: string, step: string): string {
+    const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];
     const currentStepIndex = steps.indexOf(trangThai);
     const thisStepIndex = steps.indexOf(step);
     return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
@@ -386,6 +395,152 @@ locHoaDon() {
     );
   });
 }
+
+// xuatHoaDonNhapThongMinh
+xuatHoaDonNhapThongMinh(hd: any) {
+  const element = document.getElementById('hoa-don-xuat-pdf');
+  if (!element) return;
+
+  // Lưu trữ các thuộc tính CSS ban đầu
+  const originalStyle = element.style.cssText;
+
+  // Tạm thời loại bỏ padding và margin để giảm khoảng trắng
+  element.style.padding = '0';
+  element.style.margin = '0';
+  element.style.boxSizing = 'border-box'; // Đảm bảo padding và border không thêm vào chiều rộng/cao
+
+  const images = element.getElementsByTagName('img');
+  const promises: Promise<void>[] = [];
+
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    if (!img.complete) {
+      promises.push(new Promise((resolve) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      }));
+    }
+  }
+
+  Promise.all(promises).then(() => {
+    html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+      // Khôi phục lại style ban đầu sau khi đã chụp xong
+      element.style.cssText = originalStyle;
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [594, 420] // A2 landscape
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const padding = 0; // Đặt padding PDF là 0 vì khoảng trắng đã được loại bỏ trên HTML
+      const contentWidth = pageWidth - 2 * padding;
+      const contentHeight = pageHeight - 2 * padding;
+
+      const imgRatio = canvas.width / canvas.height;
+      const pdfRatio = contentWidth / contentHeight;
+
+      let finalWidth = contentWidth;
+      let finalHeight = contentHeight;
+
+      if (imgRatio > pdfRatio) {
+        finalHeight = contentWidth / imgRatio;
+      } else {
+        finalWidth = contentHeight * imgRatio;
+      }
+
+      const offsetX = (pageWidth - finalWidth) / 2;
+      const offsetY = (pageHeight - finalHeight) / 2;
+
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
+      pdf.save(`${hd.receipt_code}.pdf`);
+
+      this.http.put(`http://localhost:3000/api/phieu-nhap/${hd.id}/xuat-hoa-don`, {})
+        .subscribe(() => {
+          hd.daXuatHoaDon = true;
+        });
+    });
+  });
+}
+
+// xuatHoaDonXuatThongMinh
+xuatHoaDonXuatThongMinh(hd: any) {
+  const element = document.getElementById('hoa-don-xuat-pdf');
+  if (!element) return;
+
+  // Lưu trữ các thuộc tính CSS ban đầu
+  const originalStyle = element.style.cssText;
+
+  // Tạm thời loại bỏ padding và margin để giảm khoảng trắng
+  element.style.padding = '0';
+  element.style.margin = '0';
+  element.style.boxSizing = 'border-box'; // Đảm bảo padding và border không thêm vào chiều rộng/cao
+
+  const images = element.getElementsByTagName('img');
+  const promises: Promise<void>[] = [];
+
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    if (!img.complete) {
+      promises.push(new Promise((resolve) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      }));
+    }
+  }
+
+  Promise.all(promises).then(() => {
+    html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+      // Khôi phục lại style ban đầu sau khi đã chụp xong
+      element.style.cssText = originalStyle;
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [594, 420] // A2 landscape
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const padding = 0; // Đặt padding PDF là 0
+      const contentWidth = pageWidth - 2 * padding;
+      const contentHeight = pageHeight - 2 * padding;
+
+      const imgRatio = canvas.width / canvas.height;
+      const pdfRatio = contentWidth / contentHeight;
+
+      let finalWidth = contentWidth;
+      let finalHeight = contentHeight;
+
+      if (imgRatio > pdfRatio) {
+        finalHeight = contentWidth / imgRatio;
+      } else {
+        finalWidth = contentHeight * imgRatio;
+      }
+
+      const offsetX = (pageWidth - finalWidth) / 2;
+      const offsetY = (pageHeight - finalHeight) / 2;
+
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
+      pdf.save(`${hd.receipt_code}_xuat.pdf`);
+
+      this.http.put(`http://localhost:3000/api/phieu-xuat/${hd.id}/xuat-hoa-don`, {})
+        .subscribe(() => {
+          hd.daXuatHoaDon = true;
+        });
+    });
+  });
+}
+
+
 
 
 }

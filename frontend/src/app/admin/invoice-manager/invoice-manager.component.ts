@@ -95,6 +95,14 @@ export class InvoiceManagerComponent implements OnInit {
     return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
   }
 
+  getStepClassXuat(trangThai: string, step: string): string {
+    const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];
+    const currentStepIndex = steps.indexOf(trangThai);
+    const thisStepIndex = steps.indexOf(step);
+    return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
+  }
+
+
   locHoaDon() {
     this.filteredHoaDonList = this.hoaDonList.filter(hd => {
       const ngayTao = new Date(hd.created_date || hd.created_at);

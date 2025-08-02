@@ -33,6 +33,8 @@ export class MuahangComponent {
   userInfo: any = {};
   today = new Date().toISOString().substring(0, 10);
 
+   maSanPhamCanThem: string = '';
+
   constructor(
     private http: HttpClient,
     private phieuMuaService: PhieuMuaService,
@@ -273,4 +275,37 @@ export class MuahangComponent {
   goToSanPhamCuakho() {
     this.router.navigate(['/sanphamcuakho']);
   }
+
+  resetForm() {
+    if (confirm('⚠️ Bạn có chắc chắn muốn tạo lại? Toàn bộ dữ liệu sẽ bị mất.')) {
+      // Reset dữ liệu form về mặc định
+      this.formData = {
+        created_date: this.today,
+        receiver_name: '',
+        logo: null,
+        logoPreview: '',
+        receiver_address: '',
+        representative_name: '',
+        representative_email: '',
+        representative_phone: '',
+        delivery_date: '',  // đổi thành delivery_date như bạn đặt
+        note: '',
+        products: []
+      };
+
+      this.generatedReceiptCode = '';
+      // Nếu có biến nhập mã sản phẩm thêm sẵn thì reset luôn
+      this.maSanPhamCanThem = '';
+
+      // Tạo 1 khung nhập sản phẩm mới (nếu bạn muốn khởi tạo luôn)
+      this.addProduct();
+
+      // Xóa dữ liệu lưu tạm trong service nếu có (thay guiHangService bằng tên service bạn dùng)
+      if(this.phieuMuaService) {
+        this.phieuMuaService.clearFormData();
+        this.phieuMuaService.clearProducts();
+      }
+    }
+  }
+
 }

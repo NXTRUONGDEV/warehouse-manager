@@ -3,12 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { FilterProductCodePipe } from '../duyetphieunhap/filter-product-code.pipe'; // Đường dẫn đúng nhé
 
 @Component({
   selector: 'app-duyetphieuxuat',
   standalone: true,
-  imports: [CommonModule, FormsModule,  FilterProductCodePipe],
+  imports: [CommonModule, FormsModule],
   templateUrl: './duyetphieuxuat.component.html',
   styleUrls: ['./duyetphieuxuat.component.css']
 })
@@ -127,7 +126,7 @@ export class DuyetphieuxuatComponent implements OnInit {
         admin_account_email: this.adminEmail,
         admin_account_name: this.adminName
       }).subscribe(() => {
-        alert('✅ Duyệt phiếu thành công!');
+        alert('✅ Kiểm tra hoàn tất! Trạng thái đã cập nhật sang "Đã duyệt". Bạn có thể xuất hàng.');
         this.selectedPhieu.trang_thai = newStatus;
         this.selectedPhieu.note_admin = this.phanHoiHeThong;
         this.selectedPhieu.admin_account_email = this.adminEmail;
@@ -158,25 +157,37 @@ export class DuyetphieuxuatComponent implements OnInit {
   }
 
   kiemTraTrongKho() {
-    if (!this.maCanKiemTra) {
-      this.ketQuaSanPham = null;
-      return;
+      if (!this.maCanKiemTra) {
+        this.ketQuaSanPham = null;
+        return;
+      }
+
+      this.http.get<any>(`http://localhost:3000/api/products-detail/check-ma/${this.maCanKiemTra}`).subscribe(res => {
+        if (res.exists) {
+          const product = res.product;
+
+          // 👇 Chuyển kiểu rõ ràng, tránh undefined hoặc string
+          product.quantity = Number(product.quantity) || 0;
+          product.unit_price = Number(product.unit_price) || 0;
+          product.weight_per_unit = Number(product.weight_per_unit) || 0;
+
+          // 👇 Tính tổng khối lượng và tổng tiền
+          product.total_weight = product.quantity * product.weight_per_unit;
+          product.total_price = product.quantity * product.unit_price;
+
+          this.ketQuaSanPham = product;
+        } else {
+          this.ketQuaSanPham = {};
+        }
+      }, err => {
+        console.error('Lỗi kiểm tra sản phẩm:', err);
+        this.ketQuaSanPham = {};
+      });
     }
 
-    this.http.get<any>(`http://localhost:3000/api/products-detail/check-ma/${this.maCanKiemTra}`).subscribe(res => {
-      if (res.exists) {
-        this.ketQuaSanPham = res.product;
-      } else {
-        this.ketQuaSanPham = {};
-      }
-    }, err => {
-      console.error('Lỗi kiểm tra sản phẩm:', err);
-      this.ketQuaSanPham = {};
-    });
-  }
 
-    // Xác nhận nhập kho chính thức
-  xacNhanNhapKhoChinhThuc() {
+  // Xác nhận xuất kho chính thức
+  xacNhanXuatKhoChinhThuc() {
     if (!this.selectedPhieu) return;
 
     const id = this.selectedPhieu.id;

@@ -361,3 +361,43 @@ table td input {
 .btn-remove:hover {
   background-color: #d9363e;
 }
+
+.form-container {
+  padding: 10px 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: center; /* căn giữa tiêu đề */
+  align-items: center;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.header-top h2 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.btn-reset {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.btn-reset:hover {
+  background-color: #d32f2f;
+}

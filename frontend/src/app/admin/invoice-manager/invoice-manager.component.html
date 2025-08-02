@@ -1,22 +1,22 @@
  <div class="main-panel">
 
-  <h2>📑 Hóa đơn tổng hợp</h2>
+  <h1>Hóa đơn tổng hợp</h1>
 
     <div class="invoice-container">
       <div class="filter-section">
         <!-- Hàng trên: 3 bộ lọc chính -->
         <div class="filter-row">
-          <label>🔎 Mã phiếu:
+          <label>Mã phiếu:
             <input [(ngModel)]="filter.keyword" (input)="locHoaDon()" />
           </label>
-          <label>📂 Loại phiếu:
+          <label>Loại phiếu:
             <select [(ngModel)]="filter.loai" (change)="locHoaDon()">
               <option value="">Tất cả</option>
               <option value="Phiếu nhập kho">Phiếu nhập kho</option>
               <option value="Phiếu xuất kho">Phiếu xuất kho</option>
             </select>
           </label>
-          <label>📦 Trạng thái:
+          <label>Trạng thái:
             <select [(ngModel)]="filter.trangThai" (change)="locHoaDon()">
               <option value="">Tất cả</option>
               <option value="Đã gửi phiếu">Đã gửi phiếu</option>
@@ -29,13 +29,13 @@
 
         <!-- Hàng dưới: Ngày tạo + Tổng tiền -->
         <div class="filter-row">
-          <label>📅 Ngày tạo từ:
+          <label>Ngày tạo từ:
             <input type="date" [(ngModel)]="filter.ngayBatDau" (change)="locHoaDon()" />
           </label>
           <label>đến:
             <input type="date" [(ngModel)]="filter.ngayKetThuc" (change)="locHoaDon()" />
           </label>
-          <label>💰 Tổng tiền min:
+          <label>Tổng tiền từ:
             <input type="number" [(ngModel)]="filter.tongTienMin" (input)="locHoaDon()" />
           </label>
           <label>max:
@@ -69,20 +69,28 @@
               <td>{{ hd.receipt_code }}</td>
               <td>{{ hd.created_date | date:'dd/MM/yyyy' }}</td>
               <td>{{ hd.total_amount | number:'1.0-0' }} VNĐ</td>
-              <td>{{ hd.trang_thai }}</td>
-              <div class="btn-wrapper">
+              <td>
+                              <span [ngClass]="{
+                                'status-duyet': hd.trang_thai === 'Đã duyệt',
+                                'status-hoanthanh': hd.trang_thai === 'Đã nhập hàng vào kho' || hd.trang_thai === 'Đã xuất hàng khỏi kho'
+                              }">
+                                {{ hd.trang_thai }}
+                              </span>
+                            </td>
+                <td>
+                <div class="btn-wrapper">
                   <button class="btn-view" (click)="xemChiTietHoaDon(hd)">
                     🔍 Xem
                   </button>
-                  <span 
-                    *ngIf="hd.trang_thai === 'Đã duyệt' && !hd.daXuatHoaDon" 
-                    class="badge-corner">!</span>
+                  <span *ngIf="hd.trang_thai === 'Đã duyệt nè' && !hd.daXuatHoaDon" class="badge-corner">!</span>
                 </div>
+              </td>
             </tr>
 
             <!-- Dòng chi tiết ngay dưới -->
             <tr *ngIf="selectedHoaDon?.receipt_code === hd.receipt_code">
               <td colspan="6">
+                <div class="chi-tiet-wrapper">
                 <div class="detail-container">
 
 <!---------------------------- Chi tiết PHIẾU NHẬP ---------------------------->
@@ -117,40 +125,41 @@
                   <!-- Thời gian & NCC -->
                   <div class="info-row">
                     <div class="info-section">
-                      <h5>⏱ Thời gian</h5>
-                      <p><strong>📅 Ngày tạo:</strong> {{ selectedHoaDon.created_date | date:'dd/MM/yyyy' }}</p>
-                      <p><strong>🗓️ Ngày hẹn:</strong> {{ selectedHoaDon.meeting_date | date:'dd/MM/yyyy' }}</p>
+                      <h5>Thời gian</h5>
+                      <p><strong>Ngày tạo:</strong> {{ selectedHoaDon.created_date | date:'dd/MM/yyyy' }}</p>
+                      <p><strong>Ngày hẹn:</strong> {{ selectedHoaDon.meeting_date | date:'dd/MM/yyyy' }}</p>
                     </div>
                     <div class="info-section">
-                      <h5>🏢 Nhà cung cấp</h5>
-                      <p><strong>🏞️ Logo:</strong></p>
+                      <h5>Nhà cung cấp</h5>
+                      <p><strong>Logo:</strong></p>
                       <img [src]="selectedHoaDon.logo_url" height="40" *ngIf="selectedHoaDon.logo_url" />
                       <p><strong>Tên NCC:</strong> {{ selectedHoaDon.supplier_name }}</p>
-                      <p><strong>📍 Địa chỉ:</strong> {{ selectedHoaDon.supplier_address }}</p>
-                      <p><strong>👤 Người đại diện:</strong> {{ selectedHoaDon.representative_name  }}</p>
-                      <p><strong>📧 Email:</strong> {{ selectedHoaDon.representative_name  }}</p>
-                      <p><strong>📧 Số điện thoại:</strong> {{ selectedHoaDon.representative_phone }}</p>
+                      <p><strong>Địa chỉ:</strong> {{ selectedHoaDon.supplier_address }}</p>
+                      <p><strong>Người đại diện:</strong> {{ selectedHoaDon.representative_name  }}</p>
+                      <p><strong>Email:</strong> {{ selectedHoaDon.representative_name  }}</p>
+                      <p><strong>Số điện thoại:</strong> {{ selectedHoaDon.representative_phone }}</p>
                     </div>
                   </div>
 
                   <!-- Quản lý & Ghi chú -->
                   <div class="info-row">
                     <div class="info-section">
-                      <h5>👨‍💼 Nhân viên tạo , duyệt đơn</h5>
-                      <p><strong>👨 Nhân viên tạo đơn:</strong> {{ selectedHoaDon.staff_account_name || 'Chưa có' }}</p>
-                      <p><strong>📧 Email:</strong> {{ selectedHoaDon.staff_account_email || 'Chưa có' }}</p>
-                      <p><strong>👨 Quản lý kho duyệt đơn:</strong> {{ selectedHoaDon.admin_account_name || 'Chưa có' }}</p>
-                      <p><strong>📧 Email:</strong> {{ selectedHoaDon.admin_account_email || 'Chưa có' }}</p>
+                      <h5>Nhân viên tạo , duyệt đơn</h5>
+                      <p><strong>Nhân viên tạo đơn:</strong> {{ selectedHoaDon.staff_account_name || 'Chưa có' }}</p>
+                      <p><strong>Email:</strong> {{ selectedHoaDon.staff_account_email || 'Chưa có' }}</p>
+                      <p><strong>Quản lý kho duyệt đơn:</strong> {{ selectedHoaDon.admin_account_name || 'Chưa có' }}</p>
+                      <p><strong>Email:</strong> {{ selectedHoaDon.admin_account_email || 'Chưa có' }}</p>
                     </div>
                     <div class="info-section">
-                      <h5>📝 Ghi chú & Phản hồi</h5>
-                      <p><strong>📝 Ghi chú của bạn:</strong> {{ selectedHoaDon.note }}</p>
-                      <p><strong>💬 Phản hồi của quản lý:</strong> {{ selectedHoaDon.note_admin }}</p>
+                      <h5>Ghi chú & Phản hồi</h5>
+                      <p><strong>Ghi chú của bạn:</strong> {{ selectedHoaDon.note }}</p>
+                      <p><strong>Phản hồi của quản lý:</strong> {{ selectedHoaDon.note_admin }}</p>
                     </div>
                   </div>
 
                   <!-- Danh sách sản phẩm -->
-                  <h4>📦 Danh sách sản phẩm</h4>
+                  <h4>Danh sách sản phẩm</h4>
+                  <div class="table-scroll-x">
                   <table class="detail-table">
                     <thead>
                       <tr>
@@ -190,9 +199,10 @@
                       </tr>
                     </tbody>
                   </table>
+                  </div>
 
                   <div class="total-amount">
-                    <strong>💰 Tổng cộng:</strong> {{ selectedHoaDon.total_amount | number:'1.0-0' }} VNĐ
+                    <strong>Tổng cộng:</strong> {{ selectedHoaDon.total_amount | number:'1.0-0' }} VNĐ
                   </div>
                   </div>
 
@@ -202,7 +212,7 @@
                         🧾 Xuất hóa đơn
                       </button>
                       <span 
-                        *ngIf="selectedHoaDon.trang_thai === 'Đã duyệt' && !selectedHoaDon.daXuatHoaDon" 
+                        *ngIf="selectedHoaDon.trang_thai === 'Đã duyệt nè' && !selectedHoaDon.daXuatHoaDon" 
                         class="badge-corner">!</span>
                     </div>
                     &nbsp;
@@ -221,17 +231,17 @@
                     <!-- 🔵 Thanh trạng thái kiểu chấm tròn hiện đại -->
                     <div class="timeline-container">
                       <div class="timeline">
-                        <div class="step" [ngClass]="getStepClass(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
+                        <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
                           <div class="circle">1</div>
                           <span>Đã gửi phiếu</span>
                         </div>
                         <div class="line"></div>
-                        <div class="step" [ngClass]="getStepClass(selectedHoaDon.trang_thai, 'Đã duyệt')">
+                        <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã duyệt')">
                           <div class="circle">2</div>
                           <span>Đã duyệt</span>
                         </div>
                         <div class="line"></div>
-                        <div class="step" [ngClass]="getStepClass(selectedHoaDon.trang_thai, 'Đã nhập hàng vào kho')">
+                        <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã nhập hàng vào kho')">
                           <div class="circle">3</div>
                           <span>Đã xuất hàng khỏi kho</span>
                         </div>
@@ -241,42 +251,43 @@
                     <!-- Thời gian & NCC -->
                     <div class="info-row">
                       <div class="info-section">
-                        <h5>⏱ Thời gian</h5>
-                        <p><strong>📅 Ngày tạo:</strong> {{ selectedHoaDon.created_date | date:'dd/MM/yyyy' }}</p>
-                        <p><strong>🗓️ Ngày hẹn:</strong> 
+                        <h5>Thời gian</h5>
+                        <p><strong>Ngày tạo:</strong> {{ selectedHoaDon.created_date | date:'dd/MM/yyyy' }}</p>
+                        <p><strong>Ngày hẹn:</strong> 
                           {{ selectedHoaDon.delivery_date ? (selectedHoaDon.delivery_date| date:'dd/MM/yyyy') : 'Chưa có' }}
                         </p>
                       </div>
                       <div class="info-section">
-                        <h5>🏢 Thông tin bên nhận hàng</h5>
-                        <p><strong>🏞️ Logo:</strong></p>
+                        <h5>Thông tin bên nhận hàng</h5>
+                        <p><strong>Logo:</strong></p>
                         <img [src]="selectedHoaDon.logo_url" height="40" *ngIf="selectedHoaDon.logo_url" />
-                        <p><strong>👤 Tên doanh nghiệp/trung tâm thương mại, ... :</strong> <br>{{ selectedHoaDon.receiver_name }}</p>
-                        <p><strong>📍 Địa chỉ doanh nghiệp/trung tâm thương mại, ... :</strong> <br> {{ selectedHoaDon.receiver_address }}</p>
-                        <p><strong>👤 Họ và tên người nhận:</strong> {{ selectedHoaDon.representative_name }}</p>
-                        <p><strong>📧 Email:</strong> {{ selectedHoaDon.representative_email }}</p>
-                        <p><strong>📧 Số điện thoại:</strong> {{ selectedHoaDon.representative_phone}}</p>
+                        <p><strong>Tên doanh nghiệp:</strong> {{ selectedHoaDon.receiver_name }}</p>
+                        <p><strong>Địa chỉ:</strong> {{ selectedHoaDon.receiver_address }}</p>
+                        <p><strong>Họ và tên người nhận:</strong> {{ selectedHoaDon.representative_name }}</p>
+                        <p><strong>Email:</strong> {{ selectedHoaDon.representative_email }}</p>
+                        <p><strong>Số điện thoại:</strong> {{ selectedHoaDon.representative_phone}}</p>
                       </div>
                     </div>
                     
                     <!-- Quản lý và ghi chú-->
                     <div class="info-row">
                       <div class="info-section">
-                        <h5>👨‍💼 Nhân viên kiểm tra , duyệt đơn</h5>
-                        <p><strong>👨 Nhân viên:</strong> {{ selectedHoaDon.staff_account_name || 'Chưa có' }}</p>
-                        <p><strong>📧 Email:</strong> {{ selectedHoaDon.staff_account_email || 'Chưa có' }}</p>
-                        <p><strong>👨 Quản lý kho:</strong> {{ selectedHoaDon.admin_account_name || 'Chưa có' }}</p>
-                        <p><strong>📧 Email:</strong> {{ selectedHoaDon.admin_account_email || 'Chưa có' }}</p>
+                        <h5>Nhân viên kiểm tra , duyệt đơn</h5>
+                        <p><strong>Nhân viên:</strong> {{ selectedHoaDon.staff_account_name || 'Chưa có' }}</p>
+                        <p><strong>Email:</strong> {{ selectedHoaDon.staff_account_email || 'Chưa có' }}</p>
+                        <p><strong>Quản lý kho:</strong> {{ selectedHoaDon.admin_account_name || 'Chưa có' }}</p>
+                        <p><strong>Email:</strong> {{ selectedHoaDon.admin_account_email || 'Chưa có' }}</p>
                       </div>
                       <div class="info-section">
-                        <h5>📝 Ghi chú & Phản hồi</h5>
-                        <p><strong>📝 Ghi chú:</strong> {{ selectedHoaDon.note }}</p>
-                        <p><strong>💬 Phản hồi từ kho:</strong> {{ selectedHoaDon.note_admin }}</p>
+                        <h5>Ghi chú & Phản hồi</h5>
+                        <p><strong>Ghi chú:</strong> {{ selectedHoaDon.note }}</p>
+                        <p><strong>Phản hồi từ kho:</strong> {{ selectedHoaDon.note_admin }}</p>
                       </div>
                     </div>
 
                     <!-- Danh sách sản phẩm xuất -->
-                    <h4>📦 Danh sách sản phẩm</h4>
+                    <h4>Danh sách sản phẩm</h4>
+                    <div class="table-scroll-x">
                     <table class="detail-table">
                       <thead>
                         <tr>
@@ -314,6 +325,7 @@
                         </tr>
                       </tbody>
                     </table>
+                    </div>
 
                     <div class="total-weight">
                       <strong>Tổng trọng lượng đơn hàng:</strong> {{ selectedHoaDon.total_weight | number:'1.0-0' }} KG
@@ -335,7 +347,7 @@
                         🧾 Xuất hóa đơn
                       </button>
                       <span 
-                        *ngIf="selectedHoaDon.trang_thai === 'Đã duyệt' && !selectedHoaDon.daXuatHoaDon" 
+                        *ngIf="selectedHoaDon.trang_thai === 'Đã duyệt nè' && !selectedHoaDon.daXuatHoaDon" 
                         class="badge-corner">!</span>
                     </div>
                     &nbsp;
@@ -344,6 +356,7 @@
 
                   </ng-template>
 
+                </div>
                 </div>
               </td>
             </tr>

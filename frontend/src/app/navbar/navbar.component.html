@@ -33,13 +33,19 @@
                 <span *ngIf="soHoaDon > 0" class="dot-alert"></span>
               </a>
               <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="/trangcanhan">👤 Trang cá nhân</a></li>
-                <li><a class="dropdown-item" href="/guihang">📥 Tạo phiếu nhập</a></li>
-                <li><a class="dropdown-item" href="/muahang">📤 Tạo phiếu xuất</a></li>
+                <li><a class="dropdown-item" href="/trangcanhan">Trang cá nhân</a></li>
+                <li><a class="dropdown-item" href="/guihang">Tạo phiếu nhập</a></li>
+                <li><a class="dropdown-item" href="/muahang">Tạo phiếu xuất</a></li>
                 <li> 
                   <a class="dropdown-item d-flex justify-content-between align-items-center" href="/hoadon">
-                    📄 Tổng hợp hóa đơn
+                    Tổng hợp hóa đơn
                     <span class="badge" *ngIf="soHoaDon > 0">{{ soHoaDon }}</span>
+                  </a>
+                </li>
+                <li class="position-relative">
+                  <a class="dropdown-item position-relative" href="/kiemkehanghoa">
+                    Kiểm kê hàng hóa
+                    <span *ngIf="canhBaoKiemKe" class="kiemke-badge">!</span>
                   </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>

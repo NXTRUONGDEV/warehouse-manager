@@ -51,17 +51,17 @@
                   <div class="col-lg-4 col-sm-4">
                     <div class="info-stat">
                       <h6>Sức chứa:</h6>
-                      <h4>85%</h4>
+                      <h4>Trên 250 tấn hàng</h4>
                     </div>
                   </div>
                   <div class="col-lg-4 col-sm-4">
                     <div class="info-stat">
                       <h6>Số lượng hàng hóa:</h6>
-                      <h4>2.340 đơn vị</h4>
+                      <h4>2.345 đơn vị</h4>
                     </div>
                   </div>
                   <div class="col-lg-12">
-                    <h2>Hệ Thống Quản Lý Kho Hàng Thông Minh</h2>
+                    <h2>Hệ Thống Quản Lý Kho Hàng </h2>
                   </div>
                   <div class="col-lg-12">
                     <div class="main-green-button scroll-to-section">
@@ -245,7 +245,6 @@
             </div>
           </div>
           <p>Đối tác và nhà cung cấp có thể gửi hàng đến kho của chúng tôi để lưu trữ, xử lý và phân phối. Chúng tôi đảm bảo kiểm tra, nhập kho và bảo quản hàng hóa an toàn, đúng quy trình.</p>
-          <div class="main-green-button"><a href="/guihang">Gửi hàng đến kho</a></div>
         </div>
       </div>
     </div>
@@ -261,11 +260,11 @@
       <div class="col-lg-8">
         <div class="section-heading wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.3s">
           <h6>Sản phẩm</h6>
-          <h2>Danh mục <em>sản phẩm mẫu</em> <span> hiện có</span></h2>
+          <h2>Danh mục <em>sản phẩm</em> <span> trong kho</span></h2>
         </div>
       </div>
       <div class="col-lg-4 d-flex justify-content-end align-items-center">
-        <a href="/muahang" class="buy-btn ms-3">Mua ngay</a>
+        <a href="/muahang" class="buy-btn ms-3">Xem thêm</a>
       </div>
     </div>
   </div>
@@ -291,8 +290,8 @@
             </p>
             <p class="product-detail">
               <strong>Vị trí:</strong> {{ sp.location || 'N/A' }}<br />
-              <strong>NSX:</strong> {{ sp.manufacture_date || '...' }}<br />
-              <strong>HSD:</strong> {{ sp.expiry_date || '...' }}
+              <strong>NSX:</strong> {{ sp.manufacture_date | date:'dd/MM/yyyy' }}<br />
+              <strong>HSD:</strong> {{ sp.expiry_date | date:'dd/MM/yyyy' }}
             </p>
             <p class="product-price">
               {{ sp.unit_price | number:'1.0-0' }} đ

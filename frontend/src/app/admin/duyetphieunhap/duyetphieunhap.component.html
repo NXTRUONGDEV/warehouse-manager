@@ -1,6 +1,6 @@
 <div class="main-panel">
 
-    <h2>📥 Duyệt phiếu nhập kho </h2>
+    <h1>Duyệt phiếu nhập kho </h1>
 
     <!-- Bộ lọc phiếu -->
     <div class="filter-bar-phieu">
@@ -14,7 +14,7 @@
         <input type="date" [(ngModel)]="filter.ngayKetThuc" (change)="locPhieu()" />
     </label>
 
-    <label>📦 Trạng thái:
+    <label>Trạng thái:
         <select [(ngModel)]="filter.trangThai" (change)="locPhieu()">
         <option value="">Tất cả</option>
         <option value="Đã gửi phiếu">Đã gửi phiếu</option>
@@ -31,7 +31,7 @@
             <th>Nhà cung cấp</th>
             <th>Ngày tạo</th>
             <th>Trạng thái</th>
-            <th>Chức năng</th>
+            <th>Thao tác</th>
         </tr>
         </thead>
         <ng-container *ngFor="let p of danhSachPhieu">
@@ -49,8 +49,8 @@
             </span>
             </td>
             <td>
-                <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">✔️ Kiểm tra duyệt phiếu</button>
-                <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">🔄 Xác nhận hàng vào kho</button>
+                <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">Kiểm tra duyệt phiếu</button>
+                <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">Xác nhận hàng vào kho</button>
                 <button *ngIf="p.trang_thai === 'Đã nhập hàng vào kho'" class="disabled-button" disabled>✔️ Hoàn thành</button>
             </td>
             </tr>
@@ -69,9 +69,9 @@
                     <!-- Hàng đầu tiên: Thông tin thời gian -->
                     <div class="info-row full-width">
                         <div class="info-section">
-                        <h3>⏱ Thông tin thời gian</h3>
-                        <p><strong>📅 Ngày tạo:</strong> {{ selectedPhieu.created_date | date:'MM/dd/yyyy' }}</p>
-                        <p><strong>🗓️ Ngày hẹn nhập hàng:</strong> {{ selectedPhieu.meeting_date | date:'MM/dd/yyyy' }}</p>
+                        <h3>Thông tin thời gian</h3>
+                        <p><strong>Ngày tạo:</strong> {{ selectedPhieu.created_date | date:'MM/dd/yyyy' }}</p>
+                        <p><strong>Ngày hẹn nhập hàng:</strong> {{ selectedPhieu.meeting_date | date:'MM/dd/yyyy' }}</p>
                         </div>
                     </div>
 
@@ -79,23 +79,23 @@
                     <div class="info-row two-columns">
                         <!-- Nhà cung cấp -->
                         <div class="info-section">
-                        <h3>🏢 Nhà cung cấp</h3>
-                        <p class="supplier-logo"><strong>🏞️ Logo nhà cung cấp:</strong> <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
-                        <p><strong>🏢 Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }}</p>
-                        <p><strong>📍 Địa chỉ nhà cung cấp:</strong> {{ selectedPhieu.supplier_address }}</p>
-                        <p><strong>👤 Họ tên người đại diện:</strong> {{ selectedPhieu.representative_name }}</p>
-                        <p><strong>📧 Email:</strong> {{ selectedPhieu.representative_email }}</p>
-                        <p><strong>📞 Số điện thoại:</strong> {{ selectedPhieu.representative_phone }}</p>
+                        <h3>Nhà cung cấp</h3>
+                        <p class="supplier-logo"><strong>Logo nhà cung cấp:</strong> <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
+                        <p><strong>Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }}</p>
+                        <p><strong>Địa chỉ nhà cung cấp:</strong> {{ selectedPhieu.supplier_address }}</p>
+                        <p><strong>Họ tên người đại diện:</strong> {{ selectedPhieu.representative_name }}</p>
+                        <p><strong>Email:</strong> {{ selectedPhieu.representative_email }}</p>
+                        <p><strong>Số điện thoại:</strong> {{ selectedPhieu.representative_phone }}</p>
                         </div>
 
                         <!-- Ghi chú -->
                         <div class="info-section">
-                        <h3>📝 Ghi chú & Phản hồi</h3>
+                        <h3>Ghi chú & Phản hồi</h3>
                         <p>
-                        <strong>👨‍💼 Nhân viên tạo phiếu này:</strong><br>
+                        <strong>Nhân viên tạo phiếu này:</strong><br>
                         {{ selectedPhieu.staff_account_name || 'Chưa có' }} — <em>email:</em> {{ selectedPhieu.staff_account_email || 'Chưa có' }}
                         </p>
-                        <p><strong>📝 Ghi chú từ nhân viên:</strong> {{ selectedPhieu.note || 'Không có' }}</p>
+                        <p><strong>Ghi chú từ nhân viên:</strong> {{ selectedPhieu.note || 'Không có' }}</p>
 
                         <br>
 
@@ -104,14 +104,14 @@
                         <strong>👨‍💼 Quản lý duyệt:</strong><br>
                          {{ adminName }} — <em>email:</em> {{ adminEmail }}
                         </p>
-                        <p><strong>📝 Phản hồi của quản lý kho: </strong> {{ selectedPhieu.note_admin || 'Chưa có' }}</p>
+                        <p><strong>Phản hồi của quản lý kho: </strong> {{ selectedPhieu.note_admin || 'Chưa có' }}</p>
                         </div>
                     </div>
                     </div>
 
 
                     <!-- Danh sách sản phẩm -->
-                    <h4>📦 Danh sách sản phẩm</h4>
+                    <h4> Danh sách sản phẩm</h4>
 
                     <div class="product-table-wrapper">
                     <div class="scroll-x">
@@ -158,29 +158,30 @@
 
                     <!-- Tổng tiền -->
                     <div class="total-amount">
-                    <strong>💰 Tổng cộng:</strong>
+                    <strong> Tổng cộng:</strong>
                     {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ 
                     </div>
 
                     <br>
 
-                    <p><strong>💬 Gửi phản hồi cho nhân viên:</strong></p>
-                    <textarea [(ngModel)]="phanHoiHeThong" placeholder="Nhập phản hồi cho khách hàng..."></textarea>
+                    <p><strong> Gửi phản hồi cho nhân viên:</strong></p>
+                    <textarea [(ngModel)]="phanHoiHeThong" placeholder="Nhập phản hồi cho nhân viên..."></textarea>
 
 
-                    <!-- Nút thực hiện -->
-                    <div class="button-group">
-                    <button (click)="hoanTatKiemTra()">
-                    {{ selectedPhieu?.trang_thai === 'Đã duyệt' ? '📩 Cập nhật phản hồi' : '✅ Duyệt phiếu , hoàn tất kiểm tra' }}
-                    </button>
+                  <!-- Nút thực hiện -->
+                <div class="button-group" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button (click)="hoanTatKiemTra()">
+                    {{ selectedPhieu?.trang_thai === 'Đã duyệt' ? 'Cập nhật phản hồi' : '✅ Duyệt phiếu nhập' }}
+                </button>
 
-                    <button 
+                <button 
                     [disabled]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
                     [class.disabled-button]="selectedPhieu.trang_thai !== 'Đã duyệt'" 
                     (click)="moPopupNhapKho()">
                     ✅ Xác nhận nhập hàng vào kho
-                    </button> 
-                    </div>
+                </button> 
+                </div>
+
                     
 
 <!----------------- 📦 POPUP Xác nhận nhập kho -->
@@ -196,15 +197,15 @@
                         <div class="check-row">
                             <input
                             [(ngModel)]="maCanKiemTra"
-                            placeholder="🔍 Nhập mã sản phẩm..."
+                            placeholder="Nhập mã sản phẩm..."
                             class="filter-input input-field"
                             />
-                            <button (click)="kiemTraTrongKho()">🔁 Kiểm tra</button>
+                            <button (click)="kiemTraTrongKho()">Kiểm tra</button>
                         </div>
 
                         <div class="check-result">
                             <ng-container *ngIf="danhSachMaTrung === null">
-                            <em style="color: gray;">💡 Danh sách mã trùng sẽ hiển thị tại đây sau khi kiểm tra.</em>
+                            <em style="color: gray;">💡 Danh sách mã hoặc sản phẩm bị trùng sẽ hiển thị tại đây sau khi kiểm tra.</em>
                             </ng-container>
 
                             <ng-container *ngIf="danhSachMaTrung !== null && danhSachMaTrung.length === 0">
@@ -249,8 +250,8 @@
                                 <td>{{ ketQuaSanPham.product_type }}</td>
                                 <td>{{ ketQuaSanPham.unit_price | number:'1.0-0' }}</td>
                                 <td>{{ ketQuaSanPham.unit }}</td>
-                                <td>{{ ketQuaSanPham.weight }}</td>
-                                <td>{{ ketQuaSanPham.area }}</td>
+                                <td>{{ ketQuaSanPham.total_weight | number:'1.1-1' }}</td>
+                                <td>{{ ketQuaSanPham.total_area | number:'1.2-2' }}</td>
                                 <td>{{ ketQuaSanPham.manufacture_date | date:'dd/MM/yyyy' }}</td>
                                 <td>{{ ketQuaSanPham.expiry_date | date:'dd/MM/yyyy' }}</td>
                                 <td>{{ ketQuaSanPham.quantity }}</td>
@@ -260,8 +261,8 @@
                         </table>
 
                         <!-- Nếu không có -->
-                        <div *ngIf="!ketQuaSanPham.product_code" style="color: crimson; font-weight: bold;">
-                            ❌ Sản phẩm với mã "{{ maCanKiemTra }}" chưa được nhập vào kho!
+                        <div *ngIf="!ketQuaSanPham.product_code" style="color: green; font-weight: bold;">
+                            ✅ Sản phẩm với mã "{{ maCanKiemTra }}" chưa được nhập vào kho!
                         </div>
                         </div>
 
@@ -269,12 +270,13 @@
                         <!-- Logo và tên nhà cung cấp -->
                         <div style="display: flex; align-items: center; gap: 20px; margin-top: 10px;" class="supplier-logo">
                         <div>
-                            <p><strong>🏢 Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }} <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
+                            <p><strong>Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }} <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
                         </div>
                         </div>
 
                         <br>
 
+                        <div class="scroll-x">
                         <!-- Bảng sản phẩm -->
                         <table class="detail-table">
                         <thead>
@@ -295,6 +297,7 @@
                             <th>Khu lưu kho</th>
                             <th>Vị trí trong kho</th>
                             <th>Chọn vị trí</th>
+                            <th>Cập nhật thêm</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -339,13 +342,20 @@
                             <td>
                             <button (click)="moPopupChonViTri(sp)">📍 Chọn vị trí</button>
                             </td>
+                            <td>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="sp.cap_nhat_them" />
+                                <span class="slider round"></span>
+                            </label>
+                            </td>
                         </tr>
                         </tbody>
                         </table>
-
+                        </div>
+                        
                         <!-- Tổng tiền -->
                         <div class="total-amount" style="margin-top: 15px;">
-                        <strong>💰 Tổng cộng:</strong> {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ
+                        <strong>Tổng cộng:</strong> {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ
                         </div>
 
                         <!-- Nút hành động -->
@@ -356,9 +366,9 @@
                             [disabled]="selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng'"
                             [ngStyle]="{ opacity: selectedPhieu?.trang_thai === 'Hoàn tất nhập hàng' ? '0.6' : '1' }"
                         >
-                            ✔️ Nhập kho
+                            Nhập kho
                         </button>
-                        <button (click)="dongPopup()">❌ Đóng</button>
+                        <button (click)="dongPopup()" style="background-color: red;">Đóng</button>
                         </div>
                     </div>
                     </div>
@@ -400,8 +410,8 @@
 
                         <br>
                         <div class="button-group">
-                        <button (click)="xacNhanViTriHang()">✅ Xác nhận vị trí</button>
-                        <button (click)="popupChonViTriMo = false">❌ Đóng</button>
+                        <button (click)="xacNhanViTriHang()">Xác nhận vị trí</button>
+                        <button (click)="popupChonViTriMo = false" style="background-color: red;">Đóng</button>
                         </div>
                     </div>
                     </div>

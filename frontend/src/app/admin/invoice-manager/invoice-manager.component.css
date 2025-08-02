@@ -4,6 +4,7 @@
   background-color: #f4f6f9;
   width: 100%;
   padding: 2% 0 0 1%;
+  overflow-x: hidden;
 }
 
 
@@ -49,6 +50,7 @@ h2, h3, h4 {
 }
 
 .btn-view {
+  margin-top: 10%;
   background-color: #2863e3;
   border: none;
   padding: 6px 12px;
@@ -582,4 +584,57 @@ h2, h3, h4 {
   .filter-row {
     flex-direction: column;
   }
+}
+
+.detail-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.chi-tiet-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 12px;
+  box-sizing: border-box;
+}
+.detail-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.table-scroll-x {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.detail-table {
+  min-width: 1200px; /* hoặc số cột * 100px */
+}
+
+.status-duyet {
+  background-color: #ffe0b2; /* cam nhạt */
+  color: #b75c00;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-hoanthanh {
+  background-color: #c8e6c9; /* xanh lá nhạt */
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.timeline:before {
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    content: " ";
+    width: 3px;
+    background-color: #eeeeee00!important;
+    left: 50%;
+    margin-left: -1.5px;
 }

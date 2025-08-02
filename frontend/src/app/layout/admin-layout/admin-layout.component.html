@@ -39,8 +39,10 @@
       <div class="sidebar-content">
         <ul class="nav nav-secondary">
           <li class="nav-item"><a href="/admin/dashboard" class="nav-link"><p>Thống kê dữ liệu kho</p></a></li>
-          <li class="nav-section"><h4 class="text-section">Chức năng của vai trò</h4></li>
-          <li class="nav-item"><a href="/admin/quanlysanpham" class="nav-link"><p>Danh sách sản phẩm</p></a></li>
+          
+          <li class="nav-section"><h4 class="text-section" style="white-space: nowrap; width: auto; display: inline-block;">
+            Chức năng duyệt phiếu
+          </h4></li>
           <li class="nav-item">
             <a href="/admin/duyetphieunhap" class="nav-link">
               <div class="badge-wrapper">
@@ -58,11 +60,23 @@
               </div>
             </a>
           </li>
-          <li class="nav-item"><a href="/admin/dashboard" class="nav-link"><p>Quản lý hàng tồn</p></a></li>
-          <li class="nav-item"><a href="/admin/account-manager" class="nav-link"><p>Quản lý tài khoản</p></a></li>
-          <li class="nav-item"><a href="/admin/invoice-manager" class="nav-link"><p>Quản lý hóa đơn</p></a></li>
+
+          <li class="nav-section"><h4 class="text-section" style="white-space: nowrap; width: auto; display: inline-block;">
+            Quản lý hàng hóa, khu vực
+          </h4></li>
+          <li class="nav-item"><a href="/admin/quanlysanpham" class="nav-link"><p>Quản lý sản phẩm</p></a></li>
+          <li class="nav-item"><a href="/admin/quanlyhangton" class="nav-link"><p>Quản lý hàng tồn</p></a></li>
+          <li class="nav-item"><a href="/admin/lichsukiemke" class="nav-link"><p>Lịch sử kiểm kê</p></a></li>
           <li class="nav-item"><a href="/admin/location-manager" class="nav-link"><p>Quản lý vị trí , khu vực</p></a></li>
-          <li class="nav-item" *ngIf="isLoggedIn"><a href="#" class="nav-link text-danger" (click)="logout()"><p>Đăng xuất</p></a></li>
+
+          <li class="nav-section"><h4 class="text-section" style="white-space: nowrap; width: auto; display: inline-block;">
+            Quản lý tài khoản , hóa đơn
+          </h4></li>
+          <li class="nav-item"><a href="/admin/account-manager" class="nav-link"><p>Quản lý tài khoản</p></a></li>
+          <li class="nav-item"><a href="/admin/quanlyncc" class="nav-link"><p>Quản lý nhà cung cấp</p></a></li>
+          <li class="nav-item"><a href="/admin/invoice-manager" class="nav-link"><p>Quản lý hóa đơn</p></a></li>
+          
+          <li class="nav-item" *ngIf="isLoggedIn"><a href="#" class="nav-link text-danger" (click)="logout()"><p style="color: rgb(192, 23, 23)">Đăng xuất</p></a></li>
         </ul>
       </div>
     </div>

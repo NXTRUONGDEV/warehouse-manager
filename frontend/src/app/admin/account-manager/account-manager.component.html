@@ -53,7 +53,7 @@
               <label>Ảnh đại diện</label>
               <input type="file" (change)="onFileSelected($event)" class="form-control">
             </div>
-            <button class="btn btn-primary w-100 mt-3" type="submit">💾 Lưu thông tin</button>
+            <button class="btn btn-primary w-100 mt-3" type="submit"> Lưu thông tin</button>
           </form>
         </div>
 
@@ -85,7 +85,7 @@
 
                 <!-- Nút Thêm -->
                 <button class="btn btn-primary ms-auto" (click)="showAccountForm = true">
-                  ➕ Thêm tài khoản
+                  Thêm tài khoản
                 </button>
               </div>
             </nav>
@@ -113,8 +113,8 @@
                   {{ user.role === 'staff' ? 'Nhân viên' : (user.role === 'admin' ? 'Quản lý kho' : 'Không xác định') }}
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary me-2" (click)="xemThongTin(user)">👁️ Xem</button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="xoaTaiKhoan(user.id)">🗑️ Xoá</button>
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="xemThongTin(user)"> Xem</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="xoaTaiKhoan(user.id)"> Xoá</button>
                 </td>
               </tr>
             </tbody>
@@ -124,6 +124,7 @@
 
         <!-- hiện form xem thông tin -->
          <!-- ✅ Popup hiển thị khi xem -->
+          <!-- ✅ Popup hiển thị khi xem -->
           <div class="modal-backdrop" *ngIf="selectedUser">
             <div class="modal-content p-4 profile-modal">
 
@@ -136,7 +137,7 @@
 
                 <div class="profile-card shadow-lg">
                   <div class="profile-left">
-                    <img [src]="selectedUser?.image_url || 'assets/img/default-avatar.png'" alt="avatar" class="avatar-img">
+                    <img [src]="selectedUser?.image_url || 'assets/img/default-avatar.png'" alt="avatar" class="avatar-img" />
                   </div>
 
                   <div class="profile-right">
@@ -144,13 +145,15 @@
                     <p><strong>Ngày sinh:</strong> {{ selectedUser?.date_of_birth || 'Chưa có' }}</p>
                     <p><strong>Giới tính:</strong> {{ selectedUser?.gender || 'Chưa có' }}</p>
                     <p><strong>Địa chỉ:</strong> {{ selectedUser?.address || 'Chưa có' }}</p>
-                    <p><strong>SĐT:</strong> {{ selectedUser?.phone || 'Chưa có' }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ selectedUser?.phone || 'Chưa có' }}</p>
                   </div>
                 </div>
               </div>
 
             </div>
           </div>
+
+
 
         
     </div>
