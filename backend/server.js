@@ -1575,23 +1575,26 @@ app.get('/api/products-detail/check-available/:code/:required', async (req, res)
 
   try {
     const [rows] = await db.promise().query(
-      'SELECT quantity FROM products_detail WHERE product_code = ?',
+      'SELECT SUM(quantity) AS total_quantity FROM products_detail WHERE product_code = ?',
       [code]
     );
 
-    if (!rows || rows.length === 0) {
-      return res.json({ product_code: code, enough: false });
-    }
-
-    const quantityInStock = rows[0].quantity;
+    const quantityInStock = rows[0].total_quantity || 0;
     const isEnough = quantityInStock >= parseInt(required);
-    res.json({ product_code: code, enough: isEnough });
+
+    res.json({
+      product_code: code,
+      enough: isEnough,
+      available: quantityInStock,
+      required: parseInt(required)
+    });
 
   } catch (err) {
     console.error('❌ Lỗi truy vấn kiểm tra số lượng:', err);
     res.status(500).json({ error: 'Lỗi máy chủ' });
   }
 });
+
 
 //trừ số lượng trong kho 
 app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {

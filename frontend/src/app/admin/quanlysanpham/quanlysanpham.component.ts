@@ -123,9 +123,22 @@ export class QuanlysanphamComponent implements OnInit {
   }
 
   moPopupChiTiet(sp: any) {
-    this.sanPhamDuocChon = sp;
+    this.sanPhamDuocChon = { ...sp };
+
+    const sl = Number(this.sanPhamDuocChon.quantity) || 0;
+    const kg1 = Number(this.sanPhamDuocChon.weight_per_unit) || 0;
+    const gia = Number(this.sanPhamDuocChon.unit_price) || 0;
+
+    const tongKg = sl * kg1;
+    const m2_moi_kg = 2 / 500; // giả sử 500kg = 2m² ⇒ 1kg = 0.004m²
+
+    this.sanPhamDuocChon.weight = tongKg;
+    this.sanPhamDuocChon.area = +(tongKg * m2_moi_kg).toFixed(2); // làm tròn 2 chữ số
+    this.sanPhamDuocChon.total_price = sl * gia;
+
     this.hienPopupChiTiet = true;
   }
+
 
   dongPopup() {
     this.hienPopupChiTiet = false;
