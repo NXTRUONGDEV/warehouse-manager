@@ -156,7 +156,7 @@
         <!-- Cột thao tác hiển thị theo cột, chặn sự kiện click -->
         <td (click)="$event.stopPropagation()" class="action-buttons column-buttons">
         <button class="btn btn-edit" (click)="moPopupCapNhat(sp); $event.stopPropagation()">Cập nhật</button>
-        <button class="btn btn-delete" (click)="xoaSanPham(sp.id); $event.stopPropagation()">Xóa</button>
+        <button class="btn btn-delete" (click)="xoaSanPham(sp.product_code); $event.stopPropagation()">Xóa</button>
         </td>
 
     </tr>
@@ -321,12 +321,12 @@
                 <td>
                   <input 
                     type="number" 
-                    [(ngModel)]="dong.quantity" 
-                    name="quantity_{{dong.id}}" 
-                    (ngModelChange)="capNhatTongKhoiLuong()" />
+                    [ngModel]="dong.quantity || 0" 
+                    (ngModelChange)="dong.quantity = $event || 0; capNhatTongKhoiLuong()" 
+                    name="quantity_{{dong.id}}" />
                 </td>
                 <td>
-                  <button type="button" (click)="capNhatSoLuongTheoDong(dong)">💾 Lưu</button>
+                  <button class="btn-luu" (click)="capNhatSoLuongTheoDong(dong)">Lưu</button>
                 </td>
               </tr>
             </tbody>
@@ -361,7 +361,9 @@
         
         <!-- 🔹 NÚT LƯU -->
         <div class="text-end mt-3">
-          <button class="btn-luu" type="submit"> Hoàn tất cập nhật</button>
+          <button type="button" class="btn-luu" (click)="capNhatSanPham(true)">
+            Hoàn tất cập nhật
+          </button>
         </div>
       </form>
     </div>

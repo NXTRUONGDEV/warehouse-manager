@@ -384,7 +384,14 @@
                         <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
                         </select>
 
-                        <br><br>
+                        <br>
+
+                        <!-- ✅ Hiển thị số đã phân bổ -->
+                        <div style="margin-bottom: 12px;">
+                        <h4><strong> Đã phân bổ:</strong></h4>
+                        - Số lượng: {{ getSoLuongDaThem() }} / {{ sanPhamDangChon.quantity }} thùng<br>
+                        - Khối lượng: {{ getKhoiLuongDaThem().toFixed(2) }} / {{ sanPhamDangChon.weight }} kg
+                        </div>
 
                         <!-- Sơ đồ 10x10 -->
                         <div class="pallet-grid-map">
@@ -412,6 +419,25 @@
                         <div class="button-group">
                         <button (click)="xacNhanViTriHang()">Xác nhận vị trí</button>
                         <button (click)="popupChonViTriMo = false" style="background-color: red;">Đóng</button>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- ✅ MINI POPUP NHẬP SỐ LƯỢNG --> 
+                    <div class="mini-popup" *ngIf="chonSoLuongPopupMo">
+                    <div class="mini-popup-content">
+                        <h4>Nhập số lượng cho pallet: {{ palletDangNhapSoLuong.name }}</h4>
+
+                        <!-- 👉 Dòng khuyến nghị -->
+                        <div *ngIf="goiYSoLuongToiDa > 0" style="margin-bottom: 8px; font-size: 13px; color: #888;">
+                        Khuyến nghị: Có thể thêm tối đa <strong>{{ goiYSoLuongToiDa }}</strong> sản phẩm (theo khối lượng còn trống).
+                        </div>
+
+                        <input type="number" [(ngModel)]="soLuongMuonThem" min="1" placeholder="Nhập số lượng" />
+                        
+                        <div class="mini-popup-actions">
+                        <button (click)="xacNhanThemSoLuongVaoPallet()">Xác nhận</button>
+                        <button (click)="chonSoLuongPopupMo = false" style="background-color: red;">Huỷ</button>
                         </div>
                     </div>
                     </div>

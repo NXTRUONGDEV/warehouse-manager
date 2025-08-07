@@ -521,3 +521,33 @@ input:checked + .slider:before {
   background: #888;
   border-radius: 4px;
 }
+
+.mini-popup {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+}
+
+.mini-popup-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.mini-popup-content input {
+  width: 80%;
+  padding: 8px;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.mini-popup-actions button {
+  margin: 0 10px;
+  padding: 6px 14px;
+  font-size: 14px;
+}

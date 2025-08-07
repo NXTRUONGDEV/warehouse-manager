@@ -836,25 +836,8 @@ app.get('/api/products-detail/by-code/:code', (req, res) => {
   });
 });
 
-// ✅ Cập nhật số lượng theo id dòng sản phẩm
-app.put('/api/products-detail/update-quantity/:id', (req, res) => {
-  const id = req.params.id;
-  const { quantity } = req.body;
 
-  if (quantity === undefined) {
-    return res.status(400).json({ message: 'Thiếu số lượng' });
-  }
 
-  const query = `UPDATE products_detail SET quantity = ? WHERE id = ?`;
-  db.query(query, [quantity, id], (err, result) => {
-    if (err) {
-      console.error('❌ Lỗi cập nhật:', err);
-      return res.status(500).json({ message: 'Lỗi cập nhật CSDL' });
-    }
-
-    res.json({ message: '✅ Đã cập nhật số lượng', affectedRows: result.affectedRows });
-  });
-});
 
 //// ========================== Lấy danh sách sản phẩm , bộ lọc , thêm xóa sửa sản phẩm  ==========================
 // Lấy danh sách sản phẩm theo mã phiếu nhập
@@ -1136,282 +1119,73 @@ app.post('/api/products-detail', upload.fields([
 });
 
 // Xóa sản phẩm trong quản lý sản phẩm
-app.delete('/api/products-detail/:id', (req, res) => {
-  const id = req.params.id;
+// Xóa toàn bộ sản phẩm theo mã product_code
+app.delete('/api/products-detail/xoa-theo-ma/:product_code', (req, res) => {
+  const productCode = req.params.product_code;
 
-  const sql = 'DELETE FROM products_detail WHERE id = ?';
+  const sql = 'DELETE FROM products_detail WHERE product_code = ?';
 
-  db.query(sql, [id], (err, result) => {
+  db.query(sql, [productCode], (err, result) => {
     if (err) {
-      console.error('❌ Lỗi khi xoá sản phẩm:', err);
-      return res.status(500).json({ error: 'Lỗi khi xoá sản phẩm' });
+      console.error('❌ Lỗi khi xoá sản phẩm theo mã:', err);
+      return res.status(500).json({ error: 'Lỗi khi xoá sản phẩm theo mã' });
     }
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Không tìm thấy sản phẩm để xoá' });
     }
-    res.json({ message: '✅ Xoá sản phẩm thành công!' });
+
+    res.json({ message: '✅ Đã xoá toàn bộ sản phẩm thành công!' });
   });
 });
 
-// ========================== Fix lỗi ==========================
-// Cập nhật sản phẩm trong quản lý sản phẩm
+
 app.put('/api/products-detail/:id', upload.fields([
-  { name: 'image', maxCount: 1 },
-  { name: 'logo', maxCount: 1 }
-]), (req, res) => {
+  { name: 'image' }, { name: 'logo' }
+]), async (req, res) => {
   const id = req.params.id;
-  const sp = req.body;
+  const body = req.body;
 
-  const image_url = req.files?.image?.[0]
-    ? `http://localhost:3000/uploads/${path.basename(req.files.image[0].path)}`
-    : sp.image_url;
+  try {
+    // Xử lý đường dẫn ảnh nếu có file mới
+    let image_url = body.image_url || '';
+    let logo_url = body.logo_url || '';
 
-  const logo_url = req.files?.logo?.[0]
-    ? `http://localhost:3000/uploads/${path.basename(req.files.logo[0].path)}`
-    : sp.logo_url;
-
-  // Kiểm tra bắt buộc
-  const required = ['product_code', 'product_name', 'product_type', 'unit', 'quantity', 'unit_price', 'weight', 'area', 'manufacture_date', 'expiry_date'];
-  for (let f of required) {
-    if (!sp[f] || sp[f].toString().trim() === '') {
-      return res.status(400).json({ error: `⚠️ Thiếu trường '${f}'` });
-    }
-  }
-
-  const numeric = ['quantity', 'unit_price', 'weight', 'area'];
-  for (let f of numeric) {
-    if (isNaN(parseFloat(sp[f])) || parseFloat(sp[f]) <= 0) {
-      return res.status(400).json({ error: `⚠️ '${f}' phải là số > 0` });
-    }
-  }
-
-  const nsx = new Date(sp.manufacture_date);
-  const hsd = new Date(sp.expiry_date);
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-
-  if (isNaN(nsx) || isNaN(hsd)) return res.status(400).json({ error: '⚠️ Ngày không hợp lệ' });
-  if (nsx >= now) return res.status(400).json({ error: '⚠️ NSX phải trước hôm nay' });
-  if (hsd <= now) return res.status(400).json({ error: '⚠️ HSD phải sau hôm nay' });
-  if (nsx >= hsd) return res.status(400).json({ error: '⚠️ NSX phải trước HSD' });
-
-  const weightPerUnit = parseFloat(sp.weight_per_unit || 0.5);
-  const areaPerUnit = parseFloat(sp.area_per_unit || 0.002);
-  const totalWeight = parseInt(sp.quantity) * weightPerUnit;
-  const KHOI_LUONG_PALLET = 500;
-
-  // Nếu vượt pallet → chia lại
-  if (totalWeight > KHOI_LUONG_PALLET) {
-    db.query(`DELETE FROM products_detail WHERE id = ?`, [id], (errDel) => {
-      if (errDel) return res.status(500).json({ error: '❌ Lỗi xóa cũ' });
-
-      const khu_vuc_id = parseInt(sp.khu_vuc_id);
-      const soPallet = Math.ceil(totalWeight / KHOI_LUONG_PALLET);
-      const prefix = `KV${khu_vuc_id}`;
-
-      db.query(`
-        SELECT location FROM products_detail
-        WHERE khu_vuc_id = ? AND location LIKE ?
-        ORDER BY location DESC LIMIT 1
-      `, [khu_vuc_id, `${prefix}_L%`], (errMax, rows) => {
-        if (errMax) return res.status(500).json({ error: '❌ Lỗi lấy STT' });
-
-        let startIndex = 1;
-        if (rows.length > 0) {
-          const match = rows[0].location.match(/L(\d+)/);
-          if (match) startIndex = parseInt(match[1]) + 1;
-        }
-
-        const inserts = [];
-        const values = [];
-
-        const totalQty = parseInt(sp.quantity);
-        const unit_price = parseFloat(sp.unit_price);
-        const qtyPerPallet = Math.floor(totalQty / soPallet);
-        let remainder = totalQty % soPallet;
-
-        for (let i = 0; i < soPallet; i++) {
-          const qty = qtyPerPallet + (remainder-- > 0 ? 1 : 0);
-          const weight = +(qty * weightPerUnit).toFixed(2);
-          const area = +(qty * areaPerUnit).toFixed(4);
-          const total_price = qty * unit_price;
-          const location = `${prefix}_L${String(startIndex + i).padStart(3, '0')}`;
-
-          inserts.push(`(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-          values.push(
-            sp.product_code,
-            sp.old_product_code || sp.product_code,
-            sp.product_name,
-            sp.product_type,
-            sp.unit,
-            image_url,
-            qty,
-            weight,
-            area,
-            weightPerUnit,
-            areaPerUnit,
-            sp.manufacture_date,
-            sp.expiry_date,
-            new Date(),
-            unit_price,
-            total_price,
-            location,
-            khu_vuc_id,
-            sp.receipt_code || '',
-            sp.supplier_name || '',
-            logo_url
-          );
-        }
-
-        const sql = `
-          INSERT INTO products_detail (
-            product_code, old_product_code, product_name, product_type, unit, image_url,
-            quantity, weight, area, weight_per_unit, area_per_unit,
-            manufacture_date, expiry_date, import_date,
-            unit_price, total_price, location, khu_vuc_id,
-            receipt_code, supplier_name, logo_url
-          )
-          VALUES ${inserts.join(', ')}
-        `;
-
-        db.query(sql, values, (err2) => {
-          if (err2) {
-            console.error('❌ Lỗi chia pallet:', err2);
-            return res.status(500).json({ error: '❌ Lỗi chia pallet sau cập nhật' });
-          }
-          res.json({ message: `✅ Đã chia pallet tự động (${soPallet} pallet)!` });
-        });
-      });
-    });
-  } else {
-    // ✅ Trường hợp cập nhật bình thường
-    const checkSQL = `
-      SELECT * FROM products_detail WHERE product_code = ? AND location = ? AND id != ?
-    `;
-    db.query(checkSQL, [sp.product_code, sp.location, id], (errCheck, rows) => {
-      if (errCheck) return res.status(500).json({ error: '❌ Lỗi kiểm tra mã' });
-      if (rows.length > 0) return res.status(400).json({ error: '⚠️ Mã sản phẩm đã tồn tại tại vị trí này (pallet).' });
-
-      const total_price = parseFloat(sp.unit_price) * parseInt(sp.quantity);
-      const sql = `
-        UPDATE products_detail SET
-          product_code = ?, product_name = ?, product_type = ?, unit = ?, quantity = ?,
-          weight = ?, area = ?, manufacture_date = ?, expiry_date = ?, unit_price = ?,
-          total_price = ?, khu_vuc_id = ?, location = ?, supplier_name = ?,
-          image_url = ?, logo_url = ?
-        WHERE id = ?
-      `;
-      const params = [
-        sp.product_code, sp.product_name, sp.product_type, sp.unit, parseInt(sp.quantity),
-        parseFloat(sp.weight), parseFloat(sp.area), sp.manufacture_date.split('T')[0],
-        sp.expiry_date.split('T')[0], parseFloat(sp.unit_price), total_price,
-        sp.khu_vuc_id, sp.location, sp.supplier_name || '',
-        image_url, logo_url, id
-      ];
-
-      db.query(sql, params, (errUpdate) => {
-        if (errUpdate) return res.status(500).json({ error: '❌ Lỗi cập nhật sản phẩm' });
-        res.json({ message: '✅ Cập nhật thành công!' });
-      });
-    });
-  }
-});
-
-// ✅ NHẬP HÀNG MỚI → TỰ CHIA PALLET
-app.post('/api/nhap-kho-them-pallet', (req, res) => {
-  const sp = req.body;
-
-  const KHOI_LUONG_PALLET = 500;
-  const khu_vuc_id = parseInt(sp.khu_vuc_id);
-  const weightPerUnit = parseFloat(sp.weight_per_unit);
-  const areaPerUnit = parseFloat(sp.area_per_unit);
-  const unit_price = parseFloat(sp.unit_price);
-  const totalQuantity = parseInt(sp.quantity);
-
-  if (!weightPerUnit || weightPerUnit <= 0) {
-    return res.status(400).json({ error: '⚠️ Thiếu hoặc sai trọng lượng mỗi đơn vị' });
-  }
-
-  const totalWeight = totalQuantity * weightPerUnit;
-  const soPallet = Math.ceil(totalWeight / KHOI_LUONG_PALLET);
-
-  const getLocationPrefix = `KV${khu_vuc_id}`;
-  const getMaxSTTsql = `
-    SELECT location FROM products_detail
-    WHERE khu_vuc_id = ? AND location LIKE ?
-    ORDER BY location DESC LIMIT 1
-  `;
-
-  db.query(getMaxSTTsql, [khu_vuc_id, `${getLocationPrefix}_L%`], (err, rows) => {
-    if (err) return res.status(500).json({ error: '❌ Lỗi lấy STT pallet' });
-
-    let startIndex = 1;
-    if (rows.length > 0) {
-      const lastLoc = rows[0].location;
-      const match = lastLoc.match(/L(\d+)/);
-      if (match) startIndex = parseInt(match[1]) + 1;
+    if (req.files?.image?.[0]) {
+      image_url = `/uploads/${req.files.image[0].filename}`;
     }
 
-    const inserts = [];
-    const values = [];
-
-    const quantityPerPallet = Math.floor(totalQuantity / soPallet);
-    let remainder = totalQuantity % soPallet;
-
-    for (let i = 0; i < soPallet; i++) {
-      const qty = quantityPerPallet + (remainder-- > 0 ? 1 : 0);
-      const weight = parseFloat((qty * weightPerUnit).toFixed(2));
-      const area = parseFloat((qty * areaPerUnit).toFixed(4));
-      const total_price = qty * unit_price;
-      const location = `${getLocationPrefix}_L${(startIndex + i).toString().padStart(3, '0')}`;
-
-      inserts.push(`(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-
-      values.push(
-        sp.product_code,                     // 1
-        sp.old_product_code || sp.product_code, // 2
-        sp.product_name,                    // 3
-        sp.product_type,                    // 4
-        sp.unit,                            // 5
-        image_url || '',                    // 6
-        qty,                                // 7
-        weight,                             // 8
-        area,                               // 9
-        weightPerUnit,                      // 10
-        areaPerUnit,                        // 11
-        sp.manufacture_date,                // 12
-        sp.expiry_date,                     // 13
-        new Date(),                         // 14 - import_date
-        unit_price,                         // 15
-        total_price,                        // 16
-        location,                           // 17
-        khu_vuc_id,                         // 18
-        sp.receipt_code || '',              // 19
-        sp.supplier_name || '',             // 20
-        logo_url || '',                     // 21
-        ''                                  // 22 (nếu bạn có thêm cột cuối nào khác – hoặc bỏ nếu không)
-      );
+    if (req.files?.logo?.[0]) {
+      logo_url = `/uploads/${req.files.logo[0].filename}`;
     }
-
 
     const sql = `
-      INSERT INTO products_detail (
-        product_code, old_product_code, product_name, product_type, unit, image_url,
-        quantity, weight, area, weight_per_unit, area_per_unit,
-        manufacture_date, expiry_date, import_date,
-        unit_price, total_price, location, khu_vuc_id,
-        receipt_code, supplier_name, logo_url
-      )
-      VALUES ${inserts.join(', ')}
+      UPDATE products_detail SET
+        product_code = ?, product_name = ?, product_type = ?, unit = ?,
+        manufacture_date = ?, expiry_date = ?,
+        weight_per_unit = ?, area_per_unit = ?,
+        location = ?, khu_vuc_id = ?, supplier_name = ?, receipt_code = ?,
+        image_url = ?, logo_url = ?
+      WHERE id = ?
     `;
 
-    db.query(sql, values, (err2, result) => {
-      if (err2) return res.status(500).json({ error: '❌ Lỗi khi nhập sản phẩm chia pallet' });
-      res.json({ message: `✅ Nhập kho thành công (${soPallet} pallet)!` });
-    });
-  });
+    const values = [
+      body.product_code, body.product_name, body.product_type, body.unit,
+      body.manufacture_date, body.expiry_date,
+      body.weight_per_unit, body.area_per_unit,
+      body.location, body.khu_vuc_id, body.supplier_name, body.receipt_code,
+      image_url, logo_url,
+      id
+    ];
+
+    await db.promise().query(sql, values);
+
+    res.json({ message: '✅ Cập nhật thông tin sản phẩm thành công (không ảnh hưởng số lượng).' });
+  } catch (err) {
+    console.error('❌ Lỗi cập nhật sản phẩm:', err);
+    res.status(500).json({ error: '❌ Lỗi server khi cập nhật sản phẩm!' });
+  }
 });
-
-
 
 // ========================== Phiếu xuất ==========================
 
@@ -1575,23 +1349,26 @@ app.get('/api/products-detail/check-available/:code/:required', async (req, res)
 
   try {
     const [rows] = await db.promise().query(
-      'SELECT quantity FROM products_detail WHERE product_code = ?',
+      'SELECT SUM(quantity) AS total_quantity FROM products_detail WHERE product_code = ?',
       [code]
     );
 
-    if (!rows || rows.length === 0) {
-      return res.json({ product_code: code, enough: false });
-    }
-
-    const quantityInStock = rows[0].quantity;
+    const quantityInStock = rows[0].total_quantity || 0;
     const isEnough = quantityInStock >= parseInt(required);
-    res.json({ product_code: code, enough: isEnough });
+
+    res.json({
+      product_code: code,
+      enough: isEnough,
+      available: quantityInStock,
+      required: parseInt(required)
+    });
 
   } catch (err) {
     console.error('❌ Lỗi truy vấn kiểm tra số lượng:', err);
     res.status(500).json({ error: 'Lỗi máy chủ' });
   }
 });
+
 
 //trừ số lượng trong kho 
 app.post('/api/phieu-xuat/xac-nhan-xuat-kho/:id', async (req, res) => {
@@ -1907,6 +1684,97 @@ app.get('/api/kho/pallet/:location', (req, res) => {
   });
 });
 
+// ✅ API mới: Trả về tất cả dòng sản phẩm theo product_code (không LIMIT)
+app.get('/api/products-detail/all-by-code/:code', (req, res) => {
+  const productCode = req.params.code;
+
+  const query = `
+    SELECT 
+      pd.id,
+      pd.product_code,
+      pd.old_product_code,
+      pd.product_name,
+      pd.product_type,
+      pd.unit,
+      pd.image_url,
+      pd.weight_per_unit,
+      pd.area_per_unit,
+      pd.unit_price,
+      pd.manufacture_date,
+      pd.expiry_date,
+      pd.quantity,
+      pd.location,
+      pd.khu_vuc_id,
+      kv.ten_khu_vuc,
+      
+      -- Thông tin NCC
+      pd.supplier_name,
+      pd.logo_url,
+
+      -- Thông tin đại diện từ phiếu nhập
+      pnk.supplier_address,
+      pnk.representative_name,
+      pnk.representative_email,
+      pnk.representative_phone
+
+    FROM products_detail pd
+    LEFT JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
+    LEFT JOIN phieu_nhap_kho pnk ON pd.receipt_code = pnk.receipt_code
+
+    WHERE pd.product_code = ?
+    ORDER BY pd.location ASC
+  `;
+
+  db.query(query, [productCode], (err, results) => {
+    if (err) {
+      console.error('❌ Lỗi truy vấn danh sách sản phẩm:', err);
+      return res.status(500).json({ message: 'Lỗi truy vấn CSDL' });
+    }
+
+    res.json(results);
+  });
+});
+
+// API: Kiểm tra số lượng tối đa có thể thêm tại location đó
+app.get('/api/products-detail/kha-dung/:location/:productId', async (req, res) => {
+  const { location, productId } = req.params;
+
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT 
+        SUM(quantity * weight_per_unit) AS used_weight
+      FROM products_detail
+      WHERE location = ?
+    `, [location]);
+
+    const used = rows[0]?.used_weight || 0;
+    const maxWeight = 500;
+
+    // Lấy trọng lượng mỗi đơn vị của dòng sản phẩm cần cập nhật
+    const [prodRows] = await db.promise().query(`
+      SELECT weight_per_unit FROM products_detail WHERE id = ?
+    `, [productId]);
+
+    if (!prodRows.length) {
+      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+    }
+
+    const weightPerUnit = prodRows[0].weight_per_unit || 0;
+    const remaining = Math.max(0, maxWeight - used);
+
+    const maxQuantityCanAdd = weightPerUnit > 0 ? Math.floor(remaining / weightPerUnit) : 0;
+
+    res.json({
+      used_weight: used,
+      remaining_weight: remaining,
+      weight_per_unit: weightPerUnit,
+      max_quantity_can_add: maxQuantityCanAdd
+    });
+  } catch (err) {
+    console.error('❌ Lỗi khi tính khối lượng khả dụng:', err);
+    res.status(500).json({ message: 'Lỗi máy chủ khi kiểm tra sức chứa' });
+  }
+});
 
 
 // ========================== chuyển vị trí , và lưu cập nhật ==========================
@@ -2684,7 +2552,8 @@ app.get('/api/kiem-ke/dot/:dotId/san-pham', (req, res) => {
       checked_by_email: row.checked_by_email_list?.split(',')[0] || null,
       actual_quantity: Number(row.actual_quantity) || null,
       system_quantity: Number(row.system_quantity) || 0,
-      kiem_ke_chi_tiet_id: (row.kiem_ke_chi_tiet_ids || '').split(',')[0] || null // để cập nhật một dòng
+      kiem_ke_chi_tiet_id: (row.kiem_ke_chi_tiet_ids || '').split(',')[0] || null, // để cập nhật một dòng
+      ghi_chu: row.ghi_chu?.split('; ')[0] || '' // ✅ thêm dòng này
     }));
 
     res.json({ success: true, data: formatted });
@@ -3081,7 +2950,8 @@ app.get('/api/xuat-excel/kiem-ke/:dotId', async (req, res) => {
                 pd.quantity AS system_quantity,
                 kkct.actual_quantity,
                 kkct.checked_by_email,
-                kkct.checked_at
+                kkct.checked_at,
+                kkct.ghi_chu  -- ✅ thêm dòng này
             FROM kiem_ke_chi_tiet kkct
             JOIN products_detail pd ON kkct.product_detail_id = pd.id
             JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
@@ -3359,6 +3229,140 @@ app.get('/api/xuat-excel/kiem-ke/:dotId', async (req, res) => {
             }
         });
     });
+});
+
+
+// ========================== cập nhật sản phẩm theo lô==========================
+
+// ✅ API kiểm tra số lượng tối đa có thể tăng thêm ở 1 dòng sản phẩm tại 1 location
+app.get('/api/products-detail/kha-dung/:location/:id', (req, res) => {
+  const location = req.params.location;
+  const id = req.params.id;
+
+  // Truy vấn lấy toàn bộ sản phẩm cùng location
+  db.query(`SELECT id, quantity, weight_per_unit FROM products_detail WHERE location = ?`, [location], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: '❌ Lỗi truy vấn sản phẩm tại vị trí này' });
+    }
+
+    let totalWeight = 0;
+    let currentProductWeightPerUnit = 0;
+    let currentProductOldQuantity = 0;
+
+    for (const row of rows) {
+        if (row.id == id) {
+            currentProductWeightPerUnit = row.weight_per_unit;
+            currentProductOldQuantity = row.quantity;
+        }
+        totalWeight += row.quantity * row.weight_per_unit;
+    }
+    
+    if (currentProductWeightPerUnit === 0) {
+      return res.status(404).json({ error: '⚠️ Không tìm thấy sản phẩm đang cập nhật' });
+    }
+
+    const maxWeight = 500;
+    
+    // Tổng khối lượng hiện tại của tất cả các sản phẩm ở vị trí này ngoại trừ sản phẩm đang được cập nhật
+    const weightOfOtherProducts = totalWeight - (currentProductOldQuantity * currentProductWeightPerUnit);
+    
+    const remainingWeight = maxWeight - weightOfOtherProducts;
+    
+    const max_quantity_can_add = Math.floor(remainingWeight / currentProductWeightPerUnit);
+    
+    res.json({ max_quantity_can_add });
+  });
+});
+
+const KHOI_LUONG_PALLET_MAX = 500;
+
+app.put('/api/products-detail/update-quantity/:id', async (req, res) => {
+  const id = req.params.id;
+  const quantity = parseInt(req.body.quantity);
+
+  console.log('📦 Dữ liệu nhận được:', req.body);
+
+  if (isNaN(quantity) || quantity < 0) {
+    return res.status(400).json({ message: '❌ Số lượng không hợp lệ!' });
+  }
+
+  try {
+    // 1. Lấy thông tin sản phẩm hiện tại
+    const [rows] = await db.promise().query(
+      `SELECT product_code, location, weight_per_unit, unit_price, area_per_unit, quantity 
+       FROM products_detail WHERE id = ?`,
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: '❌ Không tìm thấy sản phẩm!' });
+    }
+
+    const { product_code, location, weight_per_unit, unit_price, area_per_unit, quantity: oldQuantity } = rows[0];
+    const newWeight = quantity * weight_per_unit;
+
+    // 2. Nếu số lượng tăng thì kiểm tra giới hạn khối lượng
+    if (quantity > oldQuantity) {
+      const [sumRows] = await db.promise().query(
+        `SELECT SUM(quantity * weight_per_unit) AS total_other_weight 
+         FROM products_detail WHERE location = ? AND id != ?`,
+        [location, id]
+      );
+      const totalOthers = sumRows[0]?.total_other_weight || 0;
+      const totalAfter = totalOthers + newWeight;
+
+      if (totalAfter > KHOI_LUONG_PALLET_MAX) {
+        const remaining = Math.max(0, KHOI_LUONG_PALLET_MAX - totalOthers);
+        const max_quantity_can_add = Math.floor(remaining / weight_per_unit);
+        return res.status(400).json({
+          message: `❌ Tổng khối lượng vượt quá 500kg tại ${location}.`,
+          max_quantity_can_add,
+          remaining_weight: remaining
+        });
+      }
+    }
+
+    // 3. Cập nhật dòng sản phẩm
+    const total_price = quantity * unit_price;
+    await db.promise().query(
+      `UPDATE products_detail SET 
+         quantity = ?, 
+         weight = ?, 
+         area = ?, 
+         total_price = ?
+       WHERE id = ?`,
+      [quantity, newWeight, quantity * area_per_unit, total_price, id]
+    );
+
+    // 4. Tính tổng các dòng cùng mã sản phẩm
+    const [allRows] = await db.promise().query(
+      `SELECT quantity, weight_per_unit FROM products_detail WHERE product_code = ?`,
+      [product_code]
+    );
+
+    const total_quantity = allRows.reduce((sum, r) => sum + r.quantity, 0);
+    const total_weight = allRows.reduce((sum, r) => sum + (r.quantity * r.weight_per_unit), 0);
+    const total_area = total_weight * (5 / 500); // Giả định tỉ lệ diện tích theo khối lượng
+
+    // 5. Cập nhật lại các dòng cùng product_code
+    await db.promise().query(
+      `UPDATE products_detail 
+       SET total_quantity = ?, total_weight = ?, total_area = ?
+       WHERE product_code = ?`,
+      [total_quantity, total_weight, total_area, product_code]
+    );
+
+    return res.json({
+      message: '✅ Số lượng đã được cập nhật!',
+      total_quantity,
+      total_weight,
+      total_area
+    });
+
+  } catch (err) {
+    console.error('❌ Lỗi cập nhật:', err);
+    return res.status(500).json({ message: '❌ Lỗi server khi cập nhật!' });
+  }
 });
 
 // ========================== SERVER ==========================

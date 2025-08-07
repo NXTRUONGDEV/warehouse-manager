@@ -50,6 +50,13 @@ export class DuyetphieunhapComponent implements OnInit {
   phanBoCanConLai = 0;
   palletsDaChon: any[] = [];
 
+  chonSoLuongPopupMo: boolean = false;
+  palletDangNhapSoLuong: any = null;
+  soLuongMuonThem: number = 0;
+
+  goiYSoLuongToiDa: number = 0;
+
+
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -374,45 +381,76 @@ export class DuyetphieunhapComponent implements OnInit {
       this.sanPhamDangChon.ds_pallet = [];
     }
 
-    const palletDaChonIndex = this.sanPhamDangChon.ds_pallet.findIndex(
-      (p: any) => p.name === pallet.name
-    );
+    const daChon = this.sanPhamDangChon.ds_pallet.find((p: any) => p.name === pallet.name);
 
-    // 👉 Nếu đã chọn trước, thì bỏ chọn
-    if (palletDaChonIndex !== -1) {
-      const daThem = this.sanPhamDangChon.ds_pallet[palletDaChonIndex];
-      pallet.weightUsed -= daThem.added_weight;
-      this.sanPhamDangChon.ds_pallet.splice(palletDaChonIndex, 1);
+    if (daChon) {
+      // Bỏ chọn pallet
+      pallet.weightUsed -= daChon.added_weight;
+      this.sanPhamDangChon.ds_pallet = this.sanPhamDangChon.ds_pallet.filter((p: any) => p.name !== pallet.name);
       return;
     }
 
-    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity; // kg/thùng
-    const quantityConLai = this.sanPhamDangChon.quantity - this.sanPhamDangChon.ds_pallet.reduce(
-      (sum: number, p: { added_quantity: number }) => sum + p.added_quantity,
+    // 👉 Tính khối lượng còn lại của pallet
+    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity;
+    const palletTrongKg = 500 - (pallet.weightUsed || 0);
+    const maxQuantityTheoKg = Math.floor(palletTrongKg / weightPerUnit);
+
+    // 👉 Tính số lượng còn lại chưa phân bổ của sản phẩm
+    const daThem = this.getSoLuongDaThem();
+    const soLuongConLai = this.sanPhamDangChon.quantity - daThem;
+
+    // 👉 Khuyến nghị là số lượng nhỏ nhất giữa còn lại và theo khối lượng
+    const maxKhuyenNghi = Math.min(soLuongConLai, maxQuantityTheoKg);
+
+    // 👉 Mở mini popup nhập số lượng
+    this.palletDangNhapSoLuong = pallet;
+    this.goiYSoLuongToiDa = maxKhuyenNghi;
+    this.soLuongMuonThem = maxKhuyenNghi;
+    this.chonSoLuongPopupMo = true;
+  }
+
+
+
+  xacNhanThemSoLuongVaoPallet() {
+    const pallet = this.palletDangNhapSoLuong;
+    const quantityThem = this.soLuongMuonThem;
+
+    if (!quantityThem || quantityThem <= 0) {
+      alert('⚠️ Số lượng không hợp lệ!');
+      return;
+    }
+
+    const quantityDaPhan = this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_quantity,
       0
     );
+    const quantityConLai = this.sanPhamDangChon.quantity - quantityDaPhan;
 
-    const palletTrongKg = 500 - pallet.weightUsed;
-    const quantityCoTheThem = Math.min(
-      quantityConLai,
-      Math.floor(palletTrongKg / weightPerUnit)
-    );
-
-    if (quantityCoTheThem <= 0) {
-      alert('❌ Pallet không đủ chỗ hoặc đã phân hết số lượng!');
+    if (quantityThem > quantityConLai) {
+      alert(`⚠️ Vượt quá số lượng còn lại (${quantityConLai})!`);
       return;
     }
 
-    const weightThem = quantityCoTheThem * weightPerUnit;
+    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity;
+    const weightThem = quantityThem * weightPerUnit;
+    const palletTrongKg = 500 - pallet.weightUsed;
+
+    if (weightThem > palletTrongKg) {
+      alert(`⚠️ Pallet không đủ sức chứa! Chỉ còn ${palletTrongKg.toFixed(2)}kg`);
+      return;
+    }
 
     this.sanPhamDangChon.ds_pallet.push({
       name: pallet.name,
-      added_quantity: quantityCoTheThem,
+      added_quantity: quantityThem,
       added_weight: weightThem
     });
 
     pallet.weightUsed += weightThem;
+    this.chonSoLuongPopupMo = false;
   }
+
+
 
   xacNhanViTriHang() {
     const daChon: { name: string; added_weight: number; added_quantity: number }[] = this.sanPhamDangChon.ds_pallet || [];
@@ -441,5 +479,18 @@ export class DuyetphieunhapComponent implements OnInit {
     return this.sanPhamDangChon.ds_pallet.some((p: { name: string }) => p.name === pallet.name);
   }
 
+  getSoLuongDaThem(): number {
+    if (!this.sanPhamDangChon?.ds_pallet) return 0;
+    return this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_quantity, 0
+    );
+  }
+
+  getKhoiLuongDaThem(): number {
+    if (!this.sanPhamDangChon?.ds_pallet) return 0;
+    return this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_weight, 0
+    );
+  }
 
 }

@@ -240,9 +240,32 @@ CREATE TABLE khu_vuc (
   suc_chua_kg FLOAT DEFAULT 50000,       -- Sức chứa tối đa về khối lượng
   da_su_dung_kg FLOAT DEFAULT 0,         -- Đã sử dụng bao nhiêu kg
 
-  suc_chua_m2 FLOAT DEFAULT 200,        -- Sức chứa tối đa về diện tích
+  suc_chua_m2 FLOAT DEFAULT 500,        -- Sức chứa tối đa về diện tích
   da_su_dung_m2 FLOAT DEFAULT 0          -- Đã sử dụng bao nhiêu m²
 );
+
+UPDATE khu_vuc
+SET suc_chua_m2 = 500
+WHERE id > 0;
+
+SELECT 
+  pd.product_code,
+  pd.product_name,
+  pd.location,
+  kv.ten_khu_vuc,
+  
+  pd.quantity,
+  pd.weight_per_unit,
+  pd.area_per_unit,
+
+  ROUND(pd.quantity * pd.weight_per_unit, 2) AS total_weight,
+  ROUND(pd.quantity * pd.area_per_unit, 2) AS total_area
+
+FROM products_detail pd
+LEFT JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
+WHERE pd.khu_vuc_id = 3 AND pd.quantity > 0
+ORDER BY pd.location, pd.product_code;
+
 
 INSERT INTO khu_vuc (ten_khu_vuc, mo_ta)
 VALUES 
@@ -289,10 +312,19 @@ CREATE TABLE products_detail (
   -- Thông tin đối tác / phiếu nhập
   receipt_code VARCHAR(100),                  -- Mã phiếu nhập
   supplier_name VARCHAR(255),                 -- Tên nhà cung cấp
-  logo_url TEXT                               -- Logo nhà cung cấp
+  logo_url TEXT,                               -- Logo nhà cung cấp
+  
+  is_checking BOOLEAN DEFAULT 0
 );
 
-ALTER TABLE products_detail ADD is_checking BOOLEAN DEFAULT 0;
+ALTER TABLE products_detail
+ADD COLUMN total_weight DECIMAL(10,2) DEFAULT 0;
+
+ALTER TABLE products_detail
+ADD COLUMN total_quantity INT DEFAULT 0;
+
+ALTER TABLE products_detail
+ADD COLUMN total_area DECIMAL(10,2) DEFAULT 0;
 
 SELECT id, product_code, is_checking FROM products_detail;
 
@@ -305,9 +337,10 @@ delete from products_detail where id between 234 and 235;
 
 UPDATE phieu_nhap_kho
 SET trang_thai = 'Đã duyệt'
-WHERE id = 2;
+WHERE id = 16;
 
 select * from products_detail;
+drop table products_detail;
 
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
@@ -471,6 +504,7 @@ CREATE TABLE kiem_ke_chi_tiet (
   UNIQUE (dot_id, product_detail_id)       
 );
 
+select * from kiem_ke_dot;
 select * from kiem_ke_chi_tiet;
 
 drop table kiem_ke_chi_tiet;
@@ -482,4 +516,5 @@ drop table kiem_ke_dot;
 -- Nếu bạn vẫn muốn dùng is_checking trên products_detail, bạn sẽ cần cập nhật nó.
 -- Mình sẽ không dùng is_checking trên products_detail trong các ví dụ code dưới đây để đơn giản hóa.
 
+select * from products_detail
 

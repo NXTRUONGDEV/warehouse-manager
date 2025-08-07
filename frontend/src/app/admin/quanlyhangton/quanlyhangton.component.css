@@ -575,3 +575,23 @@ table.product-table th, table.product-table td {
   text-align: left;
   white-space: nowrap; /* Ngăn chữ bị xuống dòng nếu không muốn */
 }
+
+.loc-trang-thai-select {
+  min-width: 150px;
+}
+
+.loc-trang-thai-select select {
+  border-radius: 8px;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
+}
+
+.loc-trang-thai-select select:focus {
+  border-color: #66afe9;
+  outline: none;
+  box-shadow: 0 0 4px rgba(102, 175, 233, 0.6);
+}
