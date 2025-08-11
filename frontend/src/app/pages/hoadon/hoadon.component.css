@@ -608,8 +608,8 @@ h2, h3, h4 {
 }
 
 .status-duyet {
-  background-color: #ffe0b2; /* cam nhạt */
-  color: #b75c00;
+  background-color: #d0e8ff;
+  color: #1565c0;
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 500;
@@ -625,3 +625,60 @@ h2, h3, h4 {
   display: inline-block;
 }
 
+.status-huy {
+  background-color: #f8d7da; /* nền đỏ nhạt */
+  color: #842029;            /* chữ đỏ đậm */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  border: 1px solid #f5c2c7;
+}
+
+.timeline .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.timeline .step .circle-huy {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #dc3545; /* đỏ */
+  box-shadow: 0 0 6px #dc3545;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+}
+
+/* Tạo dấu X trắng bên trong */
+.timeline .step .circle-huy::before,
+.timeline .step .circle-huy::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 3px;
+  background-color: white;
+  border-radius: 2px;
+}
+
+.timeline .step .circle-huy::before {
+  transform: rotate(45deg);
+}
+
+.timeline .step .circle-huy::after {
+  transform: rotate(-45deg);
+}
+
+.timeline .step span {
+  margin-top: 6px;
+  font-size: 13px;
+  text-align: center;
+  max-width: 90px;
+  font-weight: 600;
+  color: #842029; /* chữ đỏ đậm */
+}

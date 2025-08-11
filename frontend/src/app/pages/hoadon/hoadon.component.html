@@ -29,6 +29,7 @@
                           <option value="">Tất cả</option>
                           <option value="Đã gửi phiếu">Đã gửi phiếu</option>
                           <option value="Đã duyệt">Đã duyệt</option>
+                          <option value="Đã hủy">Đã hủy</option>
                           <option value="Đã nhập hàng vào kho">Đã nhập hàng vào kho</option>
                           <option value="Đã xuất hàng khỏi kho">Đã xuất hàng khỏi kho</option>
                         </select>
@@ -77,7 +78,8 @@
                           <td>
                             <span [ngClass]="{
                               'status-duyet': hd.trang_thai === 'Đã duyệt',
-                              'status-hoanthanh': hd.trang_thai === 'Đã nhập hàng vào kho' || hd.trang_thai === 'Đã xuất hàng khỏi kho'
+                              'status-hoanthanh': hd.trang_thai === 'Đã nhập hàng vào kho' || hd.trang_thai === 'Đã xuất hàng khỏi kho',
+                              'status-huy': hd.trang_thai === 'Đã hủy'
                             }">
                               {{ hd.trang_thai }}
                             </span>
@@ -107,7 +109,8 @@
                               <h3>PHIẾU NHẬP KHO - WAREHOUSE MANAGER T&H</h3>
 
                               <!-- 🔵 Thanh trạng thái kiểu chấm tròn hiện đại -->
-                              <div class="timeline-container">
+                              <!-- Nếu trạng thái không phải Đã hủy thì hiển thị timeline 3 bước bình thường -->
+                              <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai !== 'Đã hủy'">
                                 <div class="timeline">
                                   <div class="step" [ngClass]="getStepClass(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
                                     <div class="circle">1</div>
@@ -124,7 +127,17 @@
                                     <span>Đã nhập hàng vào kho</span>
                                   </div>
                                 </div>
-                              </div>  
+                              </div>
+
+                              <!-- Nếu trạng thái là Đã hủy thì hiển thị 1 chấm đỏ có dấu X -->
+                              <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai === 'Đã hủy'">
+                                <div class="timeline">
+                                  <div class="step">
+                                    <div class="circle-huy"></div>
+                                    <span>Đã hủy</span>
+                                  </div>
+                                </div>
+                              </div>
 
                               <!-- Thời gian & NCC -->
                               <div class="info-row">
@@ -220,7 +233,11 @@
                                 &nbsp;
                                 <button 
                                   class="btn-update" 
-                                  [disabled]="selectedHoaDon.trang_thai === 'Đã duyệt' || selectedHoaDon.trang_thai === 'Đã nhập hàng vào kho'"
+                                  [disabled]="
+                                    selectedHoaDon.trang_thai === 'Đã duyệt' || 
+                                    selectedHoaDon.trang_thai === 'Đã nhập hàng vào kho' || 
+                                    selectedHoaDon.trang_thai === 'Đã hủy'
+                                  "
                                   (click)="capNhatPhieuNhap(selectedHoaDon)">
                                   ✏️ Cập nhật phiếu nhập
                                 </button>
@@ -236,8 +253,18 @@
                                 <h3>PHIẾU XUẤT KHO - WAREHOUSE MANAGER T&H</h3>
 
                                 <!-- 🔵 Thanh trạng thái -->
-                                <!-- 🔵 Thanh trạng thái kiểu chấm tròn hiện đại -->
-                                <div class="timeline-container">
+                                <!-- Nếu trạng thái là Đã hủy thì hiển thị 1 chấm đỏ có dấu X -->
+                                <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai === 'Đã hủy'">
+                                  <div class="timeline">
+                                    <div class="step">
+                                      <div class="circle-huy"></div>
+                                      <span>Đã hủy</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <!-- Nếu trạng thái không phải Đã hủy thì hiển thị timeline 3 bước bình thường -->
+                                <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai !== 'Đã hủy'">
                                   <div class="timeline">
                                     <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
                                       <div class="circle">1</div>
@@ -249,12 +276,13 @@
                                       <span>Đã duyệt</span>
                                     </div>
                                     <div class="line"></div>
-                                    <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã nhập hàng vào kho')">
+                                    <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã xuất hàng khỏi kho')">
                                       <div class="circle">3</div>
                                       <span>Đã xuất hàng khỏi kho</span>
                                     </div>
                                   </div>
                                 </div>
+
 
                                 <!-- Thời gian & NCC -->
                                 <div class="info-row">
@@ -357,9 +385,13 @@
                                     class="badge-corner">!</span>
                                 </div>
                                 &nbsp;
-                                <button 
+                                <button  
                                   class="btn-update" 
-                                  [disabled]="selectedHoaDon.trang_thai === 'Đã duyệt' || selectedHoaDon.trang_thai === 'Đã xuất hàng khỏi kho'"
+                                  [disabled]="
+                                    selectedHoaDon.trang_thai === 'Đã duyệt' || 
+                                    selectedHoaDon.trang_thai === 'Đã xuất hàng khỏi kho' || 
+                                    selectedHoaDon.trang_thai === 'Đã hủy'
+                                  "
                                   (click)="capNhatPhieuXuat(selectedHoaDon)">
                                   ✏️ Cập nhật phiếu xuất
                                 </button>

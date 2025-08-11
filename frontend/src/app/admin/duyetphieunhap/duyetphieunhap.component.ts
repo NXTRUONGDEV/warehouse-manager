@@ -50,6 +50,13 @@ export class DuyetphieunhapComponent implements OnInit {
   phanBoCanConLai = 0;
   palletsDaChon: any[] = [];
 
+  chonSoLuongPopupMo: boolean = false;
+  palletDangNhapSoLuong: any = null;
+  soLuongMuonThem: number = 0;
+
+  goiYSoLuongToiDa: number = 0;
+
+
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -374,44 +381,72 @@ export class DuyetphieunhapComponent implements OnInit {
       this.sanPhamDangChon.ds_pallet = [];
     }
 
-    const palletDaChonIndex = this.sanPhamDangChon.ds_pallet.findIndex(
-      (p: any) => p.name === pallet.name
-    );
+    const daChon = this.sanPhamDangChon.ds_pallet.find((p: any) => p.name === pallet.name);
 
-    // 👉 Nếu đã chọn trước, thì bỏ chọn
-    if (palletDaChonIndex !== -1) {
-      const daThem = this.sanPhamDangChon.ds_pallet[palletDaChonIndex];
-      pallet.weightUsed -= daThem.added_weight;
-      this.sanPhamDangChon.ds_pallet.splice(palletDaChonIndex, 1);
+    if (daChon) {
+      // Bỏ chọn pallet
+      pallet.weightUsed -= daChon.added_weight;
+      this.sanPhamDangChon.ds_pallet = this.sanPhamDangChon.ds_pallet.filter((p: any) => p.name !== pallet.name);
       return;
     }
 
-    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity; // kg/thùng
-    const quantityConLai = this.sanPhamDangChon.quantity - this.sanPhamDangChon.ds_pallet.reduce(
-      (sum: number, p: { added_quantity: number }) => sum + p.added_quantity,
+    // 👉 Tính khối lượng còn lại của pallet
+    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity;
+    const palletTrongKg = 500 - (pallet.weightUsed || 0);
+    const maxQuantityTheoKg = Math.floor(palletTrongKg / weightPerUnit);
+
+    // 👉 Tính số lượng còn lại chưa phân bổ của sản phẩm
+    const daThem = this.getSoLuongDaThem();
+    const soLuongConLai = this.sanPhamDangChon.quantity - daThem;
+
+    // 👉 Khuyến nghị là số lượng nhỏ nhất giữa còn lại và theo khối lượng
+    const maxKhuyenNghi = Math.min(soLuongConLai, maxQuantityTheoKg);
+
+    // 👉 Mở mini popup nhập số lượng
+    this.palletDangNhapSoLuong = pallet;
+    this.goiYSoLuongToiDa = maxKhuyenNghi;
+    this.soLuongMuonThem = maxKhuyenNghi;
+    this.chonSoLuongPopupMo = true;
+  }
+
+
+  xacNhanThemSoLuongVaoPallet() {
+    const pallet = this.palletDangNhapSoLuong;
+    const quantityThem = this.soLuongMuonThem;
+
+    if (!quantityThem || quantityThem <= 0) {
+      alert('⚠️ Số lượng không hợp lệ!');
+      return;
+    }
+
+    const quantityDaPhan = this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_quantity,
       0
     );
+    const quantityConLai = this.sanPhamDangChon.quantity - quantityDaPhan;
 
-    const palletTrongKg = 500 - pallet.weightUsed;
-    const quantityCoTheThem = Math.min(
-      quantityConLai,
-      Math.floor(palletTrongKg / weightPerUnit)
-    );
-
-    if (quantityCoTheThem <= 0) {
-      alert('❌ Pallet không đủ chỗ hoặc đã phân hết số lượng!');
+    if (quantityThem > quantityConLai) {
+      alert(`⚠️ Vượt quá số lượng còn lại (${quantityConLai})!`);
       return;
     }
 
-    const weightThem = quantityCoTheThem * weightPerUnit;
+    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity;
+    const weightThem = quantityThem * weightPerUnit;
+    const palletTrongKg = 500 - pallet.weightUsed;
+
+    if (weightThem > palletTrongKg) {
+      alert(`⚠️ Pallet không đủ sức chứa! Chỉ còn ${palletTrongKg.toFixed(2)}kg`);
+      return;
+    }
 
     this.sanPhamDangChon.ds_pallet.push({
       name: pallet.name,
-      added_quantity: quantityCoTheThem,
+      added_quantity: quantityThem,
       added_weight: weightThem
     });
 
     pallet.weightUsed += weightThem;
+    this.chonSoLuongPopupMo = false;
   }
 
   xacNhanViTriHang() {
@@ -441,5 +476,98 @@ export class DuyetphieunhapComponent implements OnInit {
     return this.sanPhamDangChon.ds_pallet.some((p: { name: string }) => p.name === pallet.name);
   }
 
+  getSoLuongDaThem(): number {
+    if (!this.sanPhamDangChon?.ds_pallet) return 0;
+    return this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_quantity, 0
+    );
+  }
+
+  getKhoiLuongDaThem(): number {
+    if (!this.sanPhamDangChon?.ds_pallet) return 0;
+    return this.sanPhamDangChon.ds_pallet.reduce(
+      (sum: number, p: any) => sum + p.added_weight, 0
+    );
+  }
+
+  huyPhieu(p: any) {
+    if (p.trang_thai === 'Đã gửi phiếu') {
+      // gọi API cập nhật trạng thái phiếu sang 'Đã hủy'
+      this.http.put(`http://localhost:3000/api/phieu-nhap-kho/${p.id}/huy`, { trang_thai: 'Đã hủy' }).subscribe({
+        next: (res) => {
+          // cập nhật trạng thái ở frontend để nút thay đổi ngay
+          p.trang_thai = 'Đã hủy';
+        },
+        error: (err) => {
+          alert('Hủy phiếu thất bại, vui lòng thử lại');
+        }
+      });
+    }
+  }
+
+  tuDongThemHetVaoPallet() {
+    if (!this.sanPhamDangChon || !this.danhSachPallet.length) {
+      alert("⚠️ Chưa chọn sản phẩm hoặc chưa tải pallet!");
+      return;
+    }
+
+    // Nếu chưa có mảng pallet đã chọn thì tạo mới
+    if (!this.sanPhamDangChon.ds_pallet) {
+      this.sanPhamDangChon.ds_pallet = [];
+    }
+
+    let soLuongConLai = this.sanPhamDangChon.quantity - this.getSoLuongDaThem();
+    const weightPerUnit = this.sanPhamDangChon.weight / this.sanPhamDangChon.quantity;
+
+    for (const pallet of this.danhSachPallet) {
+      if (soLuongConLai <= 0) break; // Hết hàng để phân
+
+      const palletTrongKg = 500 - (pallet.weightUsed || 0);
+      const maxQuantityTheoKg = Math.floor(palletTrongKg / weightPerUnit);
+      const soLuongThem = Math.min(soLuongConLai, maxQuantityTheoKg);
+
+      if (soLuongThem > 0) {
+        const weightThem = soLuongThem * weightPerUnit;
+
+        // Thêm vào ds_pallet của sản phẩm
+        this.sanPhamDangChon.ds_pallet.push({
+          name: pallet.name,
+          added_quantity: soLuongThem,
+          added_weight: weightThem
+        });
+
+        // Cập nhật pallet đã dùng
+        pallet.weightUsed += weightThem;
+
+        soLuongConLai -= soLuongThem;
+      }
+    }
+
+    if (soLuongConLai > 0) {
+      alert(`⚠️ Còn ${soLuongConLai} sản phẩm chưa phân bổ do pallet đầy!`);
+    } else {
+      alert("✅ Đã tự động phân bổ hết vào pallet!");
+    }
+  }
+
+  thuHoiTatCaPallet() {
+    if (!this.sanPhamDangChon || !this.sanPhamDangChon.ds_pallet) {
+      alert("⚠️ Chưa có pallet nào để thu hồi!");
+      return;
+    }
+
+    for (const p of this.sanPhamDangChon.ds_pallet) {
+      const pallet = this.danhSachPallet.find(x => x.name === p.name);
+      if (pallet) {
+        pallet.weightUsed -= p.added_weight;
+        if (pallet.weightUsed < 0) pallet.weightUsed = 0; // tránh âm
+      }
+    }
+
+    // Xóa danh sách pallet đã phân bổ cho sản phẩm
+    this.sanPhamDangChon.ds_pallet = [];
+
+    alert("♻ Đã thu hồi toàn bộ pallet vừa phân bổ!");
+  }
 
 }

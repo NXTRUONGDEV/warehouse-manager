@@ -102,7 +102,8 @@
                       <th>Trọng lượng 1 đơn vị</th>
                       <th>NSX</th>
                       <th>HSD</th>
-                      <th>Số lượng</th>
+                      <th>Tồn kho</th>
+                      <th>Số lượng mua</th>
                       <th>Đơn giá</th>
                       <th>Thành tiền</th>
                       <th>Xoá</th>
@@ -122,6 +123,7 @@
                       <td>{{ item.weight_per_unit | number:'1.2-2' }} kg</td>
                       <td>{{ item.manufacture_date | date:'dd/MM/yyyy' }}</td>
                       <td>{{ item.expiry_date | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ item.original_quantity }}</td>  <!-- Hiển thị số lượng tồn kho gốc -->
                       <td>
                         <input [(ngModel)]="item.quantity"
                                name="quantity{{i}}"

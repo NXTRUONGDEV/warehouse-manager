@@ -259,7 +259,7 @@ export class GuihangComponent {
     const kgPerUnit = Number(item.kg_per_unit) || 0;
 
     item.weight = +(quantity * kgPerUnit).toFixed(2);
-    item.area = +(item.weight / 500 * 2).toFixed(2); // Ví dụ: 500kg = 2m²
+    item.area = +(item.weight / 500 * 5).toFixed(2); // Mới: 500kg = 5m²
   }
 
   autoSave() {
@@ -381,7 +381,7 @@ export class GuihangComponent {
 
     if (quantity > 0) {
       item.kg_per_unit = +(weight / quantity).toFixed(2);
-      item.area = +(weight / 500 * 2).toFixed(2); // Cập nhật diện tích luôn
+      item.area = +(weight / 500 * 5).toFixed(2); // Mới: 500kg = 5m²
     }
   }
 

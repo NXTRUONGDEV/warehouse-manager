@@ -43,15 +43,33 @@
             <td>
             <span [ngClass]="{
                 'status-duyet': p.trang_thai === 'Đã duyệt',
-                'status-dahoanthanh': p.trang_thai === 'Đã nhập hàng vào kho'
-                }">
+                'status-dahoanthanh': p.trang_thai === 'Đã nhập hàng vào kho',
+                'status-huy': p.trang_thai === 'Đã hủy'
+            }">
                 {{ p.trang_thai }}
             </span>
             </td>
             <td>
-                <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">Kiểm tra duyệt phiếu</button>
-                <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">Xác nhận hàng vào kho</button>
-                <button *ngIf="p.trang_thai === 'Đã nhập hàng vào kho'" class="disabled-button" disabled>✔️ Hoàn thành</button>
+           <button *ngIf="p.trang_thai === 'Đã gửi phiếu' && p.trang_thai !== 'Đã hủy'" 
+                    (click)="xemChiTiet(p)" 
+                    class="btn-space btn-gray">
+            Kiểm tra duyệt phiếu
+            </button>
+
+            <button *ngIf="p.trang_thai === 'Đã gửi phiếu' || p.trang_thai === 'Đã hủy'"
+                    (click)="huyPhieu(p)" 
+                    [disabled]="p.trang_thai === 'Đã hủy'"
+                    [ngClass]="{'disabled-button': p.trang_thai === 'Đã hủy', 'btn-red': true, 'btn-space': true}">
+                Hủy phiếu
+            </button>
+
+            <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)" class="btn-bluewater">
+                Xác nhận hàng vào kho
+            </button>
+
+            <button *ngIf="p.trang_thai === 'Đã nhập hàng vào kho'" class="disabled-button-green" disabled>
+                Hoàn thành
+            </button>
             </td>
             </tr>
 
@@ -384,34 +402,74 @@
                         <option *ngFor="let kv of danhSachKhuVuc" [value]="kv.id">{{ kv.ten_khu_vuc }}</option>
                         </select>
 
-                        <br><br>
+                        <br>
+
+                        <!-- ✅ Hiển thị số đã phân bổ -->
+                        <div style="margin-bottom: 12px;">
+                        <h4><strong>Đã phân bổ:</strong></h4>
+                        - Số lượng: {{ getSoLuongDaThem() }} / {{ sanPhamDangChon.quantity }} thùng<br>
+                        - Khối lượng: {{ getKhoiLuongDaThem().toFixed(2) }} / {{ sanPhamDangChon.weight }} kg
+
+                        <!-- ✅ Nhóm nút điều khiển -->
+                        <div class="map-action-buttons">
+                            <button (click)="tuDongThemHetVaoPallet()" class="btn-blue">
+                            Tự động thêm hết vào pallet
+                            </button>
+                            &nbsp;
+                            <button (click)="thuHoiTatCaPallet()" class="btn-red">
+                            Thu hồi toàn bộ
+                            </button>
+                        </div>
+                        </div>
+
+
+                        
 
                         <!-- Sơ đồ 10x10 -->
                         <div class="pallet-grid-map">
-                        <div *ngFor="let row of palletGridPopup" class="pallet-row">
-                            <div *ngFor="let pallet of row"
-                            class="pallet-box"
-                            [title]="'KL: ' + pallet.weightUsed + 'kg | DT: ' + pallet.areaUsed.toFixed(1) + 'm²'"
-                            [ngClass]="{
-                            'pallet-empty': pallet.weightUsed === 0 && !laPalletDangChon(pallet),
-                            'pallet-used': pallet.weightUsed > 0 && pallet.weightUsed < 500 && !laPalletDangChon(pallet),
-                            'pallet-full': pallet.weightUsed >= 500,
-                            'pallet-selected': laPalletDangChon(pallet)
-                            }"
-                            (click)="chonPallet(pallet)">
-                            <div class="pallet-content">
-                                <span *ngIf="pallet.weightUsed === 0">＋</span>
-                                <span *ngIf="pallet.weightUsed > 0">{{ pallet.weightUsed }} kg</span>
+                            <div *ngFor="let row of palletGridPopup" class="pallet-row">
+                                <div *ngFor="let pallet of row"
+                                    class="pallet-box"
+                                    [title]="'KL: ' + pallet.weightUsed + 'kg | DT: ' + pallet.areaUsed.toFixed(1) + 'm²'"
+                                    [ngClass]="{
+                                        'pallet-empty': pallet.weightUsed === 0 && !laPalletDangChon(pallet),
+                                        'pallet-used': pallet.weightUsed > 0 && pallet.weightUsed < 500 && !laPalletDangChon(pallet),
+                                        'pallet-full': pallet.weightUsed >= 500,
+                                        'pallet-selected': laPalletDangChon(pallet)
+                                    }"
+                                    (click)="chonPallet(pallet)">
+                                    <div class="pallet-content">
+                                        <span *ngIf="pallet.weightUsed === 0">＋</span>
+                                        <span *ngIf="pallet.weightUsed > 0">{{ pallet.weightUsed }} kg</span>
+                                    </div>
+                                    <div class="pallet-label">{{ pallet.name }}</div>
+                                </div>
                             </div>
-                            <div class="pallet-label">{{ pallet.name }}</div>
-                            </div>
-                        </div>
                         </div>
 
                         <br>
                         <div class="button-group">
                         <button (click)="xacNhanViTriHang()">Xác nhận vị trí</button>
                         <button (click)="popupChonViTriMo = false" style="background-color: red;">Đóng</button>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- ✅ MINI POPUP NHẬP SỐ LƯỢNG --> 
+                    <div class="mini-popup" *ngIf="chonSoLuongPopupMo">
+                    <div class="mini-popup-content">
+                        <h4>Nhập số lượng cho pallet: {{ palletDangNhapSoLuong.name }}</h4>
+
+                        <!-- 👉 Dòng khuyến nghị -->
+                        <div *ngIf="goiYSoLuongToiDa > 0" style="margin-bottom: 8px; font-size: 13px; color: #888;">
+                        Khuyến nghị: Có thể thêm tối đa <strong>{{ goiYSoLuongToiDa }}</strong> sản phẩm (theo khối lượng còn trống).
+                        </div>
+
+                        <input type="number" [(ngModel)]="soLuongMuonThem" min="1" placeholder="Nhập số lượng" />
+                        
+                        <div class="mini-popup-actions">
+                        <button (click)="xacNhanThemSoLuongVaoPallet()">Xác nhận</button>
+                        <button (click)="chonSoLuongPopupMo = false" style="background-color: red;">Huỷ</button>
                         </div>
                     </div>
                     </div>

@@ -91,7 +91,8 @@ CREATE TABLE phieu_nhap_kho (
   trang_thai ENUM(
     'Đã gửi phiếu',
     'Đã duyệt',
-    'Đã nhập hàng vào kho'
+    'Đã nhập hàng vào kho',
+    'Đã hủy'
   ) DEFAULT 'Đã gửi phiếu',
   
   da_xuat_hoa_don BOOLEAN DEFAULT false,
@@ -158,7 +159,8 @@ CREATE TABLE phieu_xuat_kho (
 	trang_thai ENUM(
     'Đã gửi phiếu', 
     'Đã duyệt', 
-    'Đã xuất hàng khỏi kho'
+    'Đã xuất hàng khỏi kho',
+    'Đã hủy'
   ) DEFAULT 'Đã gửi phiếu',                                -- Trạng thái phiếu
   
   da_xuat_hoa_don BOOLEAN DEFAULT false,
@@ -191,6 +193,16 @@ CREATE TABLE phieu_xuat_kho_chi_tiet (
 select * from phieu_xuat_kho ;
 select * from phieu_xuat_kho_chi_tiet;
 
+SELECT * FROM (
+    SELECT receipt_code, created_date, total_amount, 'nhap' AS type
+    FROM phieu_nhap_kho
+    UNION ALL
+    SELECT receipt_code, created_date, total_amount, 'xuat' AS type
+    FROM phieu_xuat_kho
+  ) AS all_phieu
+  ORDER BY created_date DESC
+  LIMIT 7;
+  
 DROP TABLE IF EXISTS phieu_xuat_kho_chi_tiet;
 DROP TABLE IF EXISTS phieu_xuat_kho;
 
@@ -240,9 +252,32 @@ CREATE TABLE khu_vuc (
   suc_chua_kg FLOAT DEFAULT 50000,       -- Sức chứa tối đa về khối lượng
   da_su_dung_kg FLOAT DEFAULT 0,         -- Đã sử dụng bao nhiêu kg
 
-  suc_chua_m2 FLOAT DEFAULT 200,        -- Sức chứa tối đa về diện tích
+  suc_chua_m2 FLOAT DEFAULT 500,        -- Sức chứa tối đa về diện tích
   da_su_dung_m2 FLOAT DEFAULT 0          -- Đã sử dụng bao nhiêu m²
 );
+
+UPDATE khu_vuc
+SET suc_chua_m2 = 500
+WHERE id > 0;
+
+SELECT 
+  pd.product_code,
+  pd.product_name,
+  pd.location,
+  kv.ten_khu_vuc,
+  
+  pd.quantity,
+  pd.weight_per_unit,
+  pd.area_per_unit,
+
+  ROUND(pd.quantity * pd.weight_per_unit, 2) AS total_weight,
+  ROUND(pd.quantity * pd.area_per_unit, 2) AS total_area
+
+FROM products_detail pd
+LEFT JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
+WHERE pd.khu_vuc_id = 3 AND pd.quantity > 0
+ORDER BY pd.location, pd.product_code;
+
 
 INSERT INTO khu_vuc (ten_khu_vuc, mo_ta)
 VALUES 
@@ -289,10 +324,19 @@ CREATE TABLE products_detail (
   -- Thông tin đối tác / phiếu nhập
   receipt_code VARCHAR(100),                  -- Mã phiếu nhập
   supplier_name VARCHAR(255),                 -- Tên nhà cung cấp
-  logo_url TEXT                               -- Logo nhà cung cấp
+  logo_url TEXT,                               -- Logo nhà cung cấp
+  
+  is_checking BOOLEAN DEFAULT 0
 );
 
-ALTER TABLE products_detail ADD is_checking BOOLEAN DEFAULT 0;
+ALTER TABLE products_detail
+ADD COLUMN total_weight DECIMAL(10,2) DEFAULT 0;
+
+ALTER TABLE products_detail
+ADD COLUMN total_quantity INT DEFAULT 0;
+
+ALTER TABLE products_detail
+ADD COLUMN total_area DECIMAL(10,2) DEFAULT 0;
 
 SELECT id, product_code, is_checking FROM products_detail;
 
@@ -303,11 +347,12 @@ WHERE is_checking = 1 AND id > 0;
 
 delete from products_detail where id between 234 and 235;
 
-UPDATE phieu_nhap_kho
-SET trang_thai = 'Đã duyệt'
-WHERE id = 2;
+UPDATE phieu_xuat_kho
+SET trang_thai = 'Đã gửi phiếu'
+WHERE id = 1;
 
 select * from products_detail;
+drop table products_detail;
 
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
@@ -382,7 +427,7 @@ SELECT
     kv.ten_khu_vuc,
     kv.mo_ta,
     kv.suc_chua_kg,
-    kv.da_su_dung_kg,
+    IFNULL(SUM(pd.weight), 0) AS da_su_dung_kg, -- đây là tổng khối lượng thực tế chiếm chỗ
     kv.suc_chua_m2,
     kv.da_su_dung_m2,
     COUNT(pd.id) AS so_san_pham,
@@ -394,6 +439,24 @@ LEFT JOIN products_detail pd ON kv.id = pd.khu_vuc_id
 GROUP BY kv.id
 ORDER BY kv.id ASC;
 
+SELECT 
+    kv.id AS khu_vuc_id,
+    kv.ten_khu_vuc,
+    kv.suc_chua_kg,
+    IFNULL(SUM(pd.weight), 0) AS da_su_dung_kg
+FROM khu_vuc kv
+LEFT JOIN products_detail pd ON kv.id = pd.khu_vuc_id
+GROUP BY kv.id;
+
+SELECT 
+    kv.id AS khu_vuc_id,
+    kv.ten_khu_vuc,
+    kv.suc_chua_kg,
+    IFNULL(SUM(pd.weight), 0) AS da_su_dung_kg,
+    FLOOR((kv.suc_chua_kg - IFNULL(SUM(pd.weight), 0)) / 500) AS so_vi_tri_con_trong
+FROM khu_vuc kv
+LEFT JOIN products_detail pd ON kv.id = pd.khu_vuc_id
+GROUP BY kv.id, kv.ten_khu_vuc, kv.suc_chua_kg;
 
 /*Xem danh sách các sản phẩm trong khu*/
 CREATE OR REPLACE VIEW danh_sach_san_pham_theo_khu_vuc AS
@@ -471,6 +534,7 @@ CREATE TABLE kiem_ke_chi_tiet (
   UNIQUE (dot_id, product_detail_id)       
 );
 
+select * from kiem_ke_dot;
 select * from kiem_ke_chi_tiet;
 
 drop table kiem_ke_chi_tiet;
@@ -482,4 +546,5 @@ drop table kiem_ke_dot;
 -- Nếu bạn vẫn muốn dùng is_checking trên products_detail, bạn sẽ cần cập nhật nó.
 -- Mình sẽ không dùng is_checking trên products_detail trong các ví dụ code dưới đây để đơn giản hóa.
 
+select * from products_detail
 

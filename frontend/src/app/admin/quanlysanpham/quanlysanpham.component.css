@@ -612,3 +612,30 @@ h2 {
   border: none;
   border-radius: 4px;
 }
+
+.btn-luu {
+  background-color: #2a8df4;         /* Xanh chủ đạo */
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-in-out;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-luu:hover {
+  background-color: #1976d2;         /* Màu hover đậm hơn */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
+
+.btn-luu:active {
+  transform: scale(0.98);
+  background-color: #145ea8;
+}

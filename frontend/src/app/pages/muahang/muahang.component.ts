@@ -69,6 +69,7 @@ export class MuahangComponent {
       unit: '',
       weight: 0,
       weight_per_unit: 0,
+      original_quantity: 0, // 🆕 Số lượng gốc
       manufacture_date: '',
       expiry_date: '',
       quantity: 0,
@@ -124,6 +125,11 @@ export class MuahangComponent {
   onQuantityChange(index: number): void {
     const item = this.formData.products[index];
 
+    if (item.quantity > item.original_quantity) {
+      alert(`⚠️ Số lượng mua không được lớn hơn tồn kho (${item.original_quantity}).`);
+      item.quantity = item.original_quantity;
+    }
+
     if (item.quantity && item.weight_per_unit) {
       item.weight = item.quantity * item.weight_per_unit;
     }
@@ -131,6 +137,7 @@ export class MuahangComponent {
     this.phieuMuaService.setProducts(this.formData.products);
     this.saveForm();
   }
+
 
   onFormChange(): void {
     this.saveForm();

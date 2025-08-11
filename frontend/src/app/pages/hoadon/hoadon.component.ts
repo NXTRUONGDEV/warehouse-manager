@@ -122,12 +122,13 @@ ngOnInit(): void {
     return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
   }
 
-   getStepClassXuat(trangThai: string, step: string): string {
-    const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];
-    const currentStepIndex = steps.indexOf(trangThai);
-    const thisStepIndex = steps.indexOf(step);
-    return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
-  }
+getStepClassXuat(trangThai: string, step: string): string {
+  const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];  // đúng với tên bước 3
+  const currentStepIndex = steps.indexOf(trangThai);
+  const thisStepIndex = steps.indexOf(step);
+  return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
+}
+
 
   
 capNhatPhieuNhap(hd: any) {
