@@ -192,44 +192,9 @@ CREATE TABLE phieu_xuat_kho_chi_tiet (
 
 select * from phieu_xuat_kho ;
 select * from phieu_xuat_kho_chi_tiet;
-
-SELECT * FROM (
-    SELECT receipt_code, created_date, total_amount, 'nhap' AS type
-    FROM phieu_nhap_kho
-    UNION ALL
-    SELECT receipt_code, created_date, total_amount, 'xuat' AS type
-    FROM phieu_xuat_kho
-  ) AS all_phieu
-  ORDER BY created_date DESC
-  LIMIT 7;
   
 DROP TABLE IF EXISTS phieu_xuat_kho_chi_tiet;
 DROP TABLE IF EXISTS phieu_xuat_kho;
-
-CREATE OR REPLACE VIEW vw_hoa_don_tong_hop AS
-SELECT
-  'Phiếu nhập' AS loai_phieu,
-  id,
-  receipt_code,
-  created_date,
-  supplier_name AS doi_tac,
-  total_amount,
-  trang_thai,
-  user_id
-FROM phieu_nhap_kho
-UNION
-SELECT
-  'Phiếu xuất' AS loai_phieu,
-  id,
-  receipt_code,
-  created_date,
-  receiver_name AS doi_tac,
-  total_amount,
-  trang_thai,
-  user_id
-FROM phieu_xuat_kho;
-
-
 
 /*Bảng tổng quan kho , sức chứa*/
 CREATE TABLE tong_suc_chua (
@@ -256,28 +221,6 @@ CREATE TABLE khu_vuc (
   da_su_dung_m2 FLOAT DEFAULT 0          -- Đã sử dụng bao nhiêu m²
 );
 
-UPDATE khu_vuc
-SET suc_chua_m2 = 500
-WHERE id > 0;
-
-SELECT 
-  pd.product_code,
-  pd.product_name,
-  pd.location,
-  kv.ten_khu_vuc,
-  
-  pd.quantity,
-  pd.weight_per_unit,
-  pd.area_per_unit,
-
-  ROUND(pd.quantity * pd.weight_per_unit, 2) AS total_weight,
-  ROUND(pd.quantity * pd.area_per_unit, 2) AS total_area
-
-FROM products_detail pd
-LEFT JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
-WHERE pd.khu_vuc_id = 3 AND pd.quantity > 0
-ORDER BY pd.location, pd.product_code;
-
 
 INSERT INTO khu_vuc (ten_khu_vuc, mo_ta)
 VALUES 
@@ -286,6 +229,39 @@ VALUES
 ('Thời trang & giày dép', 'Sản phẩm thời trang, quần áo, giày dép'),
 ('Thiết bị điện tử', 'Các thiết bị công nghệ, điện tử'),
 ('Đồ dùng gia đình', 'Nồi niêu, nước lau nhà, nước rửa chén, vật dụng gia đình');
+
+/*Bảng sản phẩm*/
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_code VARCHAR(100) NOT NULL UNIQUE,    -- Mã sản phẩm chung
+  product_name VARCHAR(255) NOT NULL,
+  product_type VARCHAR(255) NOT NULL,
+  unit VARCHAR(50),
+  image_url TEXT,
+
+  -- Tổng số lượng, khối lượng, diện tích tổng thể
+  total_quantity INT DEFAULT 0,
+  total_weight DECIMAL(10,2) DEFAULT 0,
+  total_area DECIMAL(10,2) DEFAULT 0,
+
+  -- Thông tin thêm nếu cần
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/*chèn vào để gom*/
+INSERT INTO products (product_code, product_name, product_type, unit, image_url, total_quantity, total_weight, total_area)
+SELECT
+  product_code,
+  product_name,
+  product_type,
+  unit,
+  image_url,
+  SUM(quantity) AS total_quantity,
+  SUM(weight) AS total_weight,
+  SUM(area) AS total_area
+FROM products_detail
+GROUP BY product_code, product_name, product_type, unit, image_url;
 
 
 /*Bảng danh sách sản phẩm*/
@@ -326,33 +302,14 @@ CREATE TABLE products_detail (
   supplier_name VARCHAR(255),                 -- Tên nhà cung cấp
   logo_url TEXT,                               -- Logo nhà cung cấp
   
-  is_checking BOOLEAN DEFAULT 0
+  is_checking BOOLEAN DEFAULT 0,
+  
+   -- Các cột thêm từ ALTER
+  total_weight DECIMAL(10,2) DEFAULT 0,
+  total_quantity INT DEFAULT 0,
+  total_area DECIMAL(10,2) DEFAULT 0
 );
 
-ALTER TABLE products_detail
-ADD COLUMN total_weight DECIMAL(10,2) DEFAULT 0;
-
-ALTER TABLE products_detail
-ADD COLUMN total_quantity INT DEFAULT 0;
-
-ALTER TABLE products_detail
-ADD COLUMN total_area DECIMAL(10,2) DEFAULT 0;
-
-SELECT id, product_code, is_checking FROM products_detail;
-
--- Reset tất cả đang kiểm kê về 0
-UPDATE products_detail 
-SET is_checking = 0 
-WHERE is_checking = 1 AND id > 0;
-
-delete from products_detail where id between 234 and 235;
-
-UPDATE phieu_xuat_kho
-SET trang_thai = 'Đã gửi phiếu'
-WHERE id = 1;
-
-select * from products_detail;
-drop table products_detail;
 
 /*Trigger tự động tính weight_per_unit, area_per_unit*/
 DELIMITER //
@@ -479,10 +436,7 @@ FROM products_detail pd
 JOIN khu_vuc kv ON pd.khu_vuc_id = kv.id
 ORDER BY kv.id ASC, pd.import_date DESC;
 
-
 SHOW TRIGGERS;
-SHOW TRIGGERS LIKE 'user_info';
-DROP TRIGGER IF EXISTS sync_name_from_fullname;
 
 CREATE TABLE location_transfer_log (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -502,6 +456,8 @@ CREATE TABLE log_tru_hang (
   phieu_xuat_id INT
 );
 
+drop table location_transfer_log;
+drop table log_tru_hang;
 
 -- Bảng lưu thông tin đợt kiểm kê
 CREATE TABLE kiem_ke_dot (
@@ -509,11 +465,9 @@ CREATE TABLE kiem_ke_dot (
   ma_dot VARCHAR(50) NOT NULL UNIQUE,           -- Mã đợt kiểm kê tự động (ví dụ: KK001_27072025)
   ten_dot VARCHAR(255) NOT NULL,                -- Tên đợt do Admin nhập (ví dụ: "Kiểm kê Quý 3/2025")
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  created_by_email VARCHAR(255)                 -- Email người tạo đợt kiểm kê (Admin)
+  created_by_email VARCHAR(255),                 -- Email người tạo đợt kiểm kê (Admin)
+   status VARCHAR(20) DEFAULT 'dang_kiem'  
 );
-
-ALTER TABLE kiem_ke_dot ADD COLUMN status VARCHAR(20) DEFAULT 'dang_kiem';
-
 
 -- Bảng lưu chi tiết các sản phẩm trong từng đợt kiểm kê
 CREATE TABLE kiem_ke_chi_tiet (
@@ -540,11 +494,4 @@ select * from kiem_ke_chi_tiet;
 drop table kiem_ke_chi_tiet;
 drop table kiem_ke_dot;
 
--- Bảng `products_detail` của bạn có thể cần thêm cột `is_checking` (hoặc tương tự)
--- để đánh dấu sản phẩm đang trong quá trình kiểm kê hay không.
--- Tuy nhiên, trong quy trình mới này, việc theo dõi is_checking sẽ nằm trong kiem_ke_chi_tiet.
--- Nếu bạn vẫn muốn dùng is_checking trên products_detail, bạn sẽ cần cập nhật nó.
--- Mình sẽ không dùng is_checking trên products_detail trong các ví dụ code dưới đây để đơn giản hóa.
-
-select * from products_detail
 
