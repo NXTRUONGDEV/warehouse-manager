@@ -69,17 +69,34 @@
 </div>
 
 <div class="action-bar d-flex align-items-center justify-content-between" style="margin: 10px 0;">
-  <div>
+  <div class="d-flex align-items-center flex-wrap gap-2">
+    
+    <!-- 🔍 Bộ lọc trạng thái chọn -->
+    <!-- 🔍 Bộ lọc trạng thái chọn -->
+    <div class="ms-3 loc-trang-thai-select">
+      <select class="form-select form-select-sm" [(ngModel)]="boLocChon">
+        <option value="">Tất cả</option>
+        <option value="chon">Đã chọn</option>
+        <option value="bo">Chưa chọn</option>
+      </select>
+    </div>
+
     <button class="btn btn-select-all" (click)="chonTatCa()">✅ Chọn tất cả</button>
     <button class="btn btn-unselect-all" (click)="boChonTatCa()">🚫 Bỏ chọn tất cả</button>
+
+
     <button class="btn btn-secondary" (click)="moDanhSachKiemKe()">
       Danh sách kiểm kê ({{ getDanhSachSanPhamDuocChon().length }})
     </button>
-    <span *ngIf="currentInventoryBatchId" class="fw-bold text-primary">
-    📌 Mã đợt: {{ currentBatchCode }}
-  </span>
+
+    <span *ngIf="currentInventoryBatchId" class="fw-bold text-primary ms-2">
+      📌 Mã đợt: {{ currentBatchCode }}
+    </span>
+
+    
   </div>
 </div>
+
 
 
 <table class="product-table">
@@ -100,7 +117,7 @@
     </tr>
   </thead>
   <tbody>
-    <ng-container *ngFor="let sp of danhSachSanPham">
+    <ng-container *ngFor="let sp of danhSachSanPhamLocTheoChon">
       <tr (click)="moPopupChiTiet(sp)">
         <td>
           <input
@@ -167,16 +184,17 @@
 
         <!-- 🆕 Thêm Thất thoát -->
         <td [ngClass]="getClassTinhTrang(sp)">
-          <ng-container *ngIf="sp.actual_quantity != null">
+          <ng-container *ngIf="!sp.isNew && sp.actual_quantity != null">
             {{ tinhThatThoat(sp) | number:'1.0-0' }}
           </ng-container>
-          <span *ngIf="sp.actual_quantity == null">—</span>
+          <span *ngIf="sp.isNew || sp.actual_quantity == null">—</span>
         </td>
 
-        <td>{{ sp.kiem_ke_email || '—' }}</td>
+
+        <td>{{ sp.isNew || sp.actual_quantity == null ? '—' : (sp.kiem_ke_email || '—') }}</td>
 
         <td (click)="$event.stopPropagation()">
-          <button class="btn btn-log" (click)="xemLichSu(sp, $event)">📜 Lịch sử</button>
+          <button class="btn btn-log" (click)="xemLichSu(sp, $event)">Lịch sử</button>
         </td>
       </tr>
       <tr *ngIf="sanPhamDangMoLog === sp.product_code">
@@ -332,6 +350,7 @@
               <th>Khu vực</th>
               <th>Tồn kho</th>
               <th>Tình trạng</th>
+              <th>Ghi chú</th>
               <th>Người kiểm</th>
               <th *ngIf="currentInventoryBatchId || hasNewProducts()">Thao tác</th>
             </tr>
@@ -364,7 +383,8 @@
                   <span *ngIf="sp.actual_quantity == null">⏳ Đang kiểm</span>
                 </ng-container>
               </td>
-              <td>{{ sp.kiem_ke_email || '—' }}</td>
+              <td>{{ sp.isNew || sp.actual_quantity == null ? '—' : (sp.ghi_chu || '—') }}</td>
+              <td>{{ sp.isNew || sp.actual_quantity == null ? '—' : (sp.kiem_ke_email || '—') }}</td>
               <td *ngIf="currentInventoryBatchId || sp.isNew">
                 <div class="d-flex justify-content-center gap-2">
                   <button 

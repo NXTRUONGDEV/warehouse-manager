@@ -102,15 +102,16 @@ export class KiemkehanghoaComponent implements OnInit {
               const savedRaw = localStorage.getItem(key);
 
               let actual_quantity = sp.actual_quantity ?? null;
+              let ghi_chu = sp.ghi_chu ?? '';
               let temp_email = null;
 
               if (savedRaw) {
                 try {
                   const saved = JSON.parse(savedRaw);
                   actual_quantity = saved.actual_quantity ?? actual_quantity;
+                  ghi_chu = saved.ghi_chu ?? ghi_chu;
                   temp_email = saved.temp_email ?? null;
                 } catch {
-                  // Trường hợp localStorage cũ chỉ là số
                   actual_quantity = +savedRaw;
                 }
               }
@@ -118,6 +119,7 @@ export class KiemkehanghoaComponent implements OnInit {
               return {
                 ...sp,
                 actual_quantity,
+                ghi_chu,
                 checked_by_email: sp.checked_by_email ?? null,
                 temp_email
               };
@@ -141,6 +143,7 @@ export class KiemkehanghoaComponent implements OnInit {
         }
       });
   }
+
 
   xacNhanMotSanPham(sp: any) {
     if (sp.actual_quantity === null || sp.actual_quantity === '') {
@@ -243,7 +246,7 @@ export class KiemkehanghoaComponent implements OnInit {
     this.sanPhamDangXem = sp;
     this.popupChiTiet = true;
 
-    this.http.get<any[]>(`http://localhost:3000/api/products-detail/by-code/${sp.product_code}`).subscribe({
+    this.http.get<any[]>(`http://localhost:3000/api/products-detail/all-by-code/${sp.product_code}`).subscribe({
       next: (data) => {
         this.sanPhamDangXem.pallets = data;
       },
@@ -258,11 +261,14 @@ export class KiemkehanghoaComponent implements OnInit {
     const key = `kiemke_${this.dotId}_${sp.kiem_ke_chi_tiet_id}`;
 
     if (sp.actual_quantity === null || sp.actual_quantity === '') {
+      // Nếu chưa nhập số lượng, xóa hết localStorage
       localStorage.removeItem(key);
       sp.temp_email = null;
     } else {
+      // Nếu đã nhập thì lưu cả ghi chú và temp_email (nếu khác người)
       const dataToSave = {
         actual_quantity: sp.actual_quantity,
+        ghi_chu: sp.ghi_chu || '',
         temp_email: (sp.checked_by_email !== this.email) ? this.email : null
       };
 
@@ -270,6 +276,7 @@ export class KiemkehanghoaComponent implements OnInit {
       sp.temp_email = dataToSave.temp_email;
     }
   }
+
 
   locDanhSach() {
     this.danhSachCanDem = this.danhSachCanDemGoc.filter(sp => {

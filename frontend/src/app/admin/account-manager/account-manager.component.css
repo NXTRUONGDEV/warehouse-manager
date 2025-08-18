@@ -414,3 +414,105 @@ table {
 .profile-right p {
   margin: 6px 0;
 }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 350px;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* CSS chung cho select */
+.status-select {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+  text-align: center;
+  min-width: 120px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none; /* Ẩn style mặc định của trình duyệt */
+}
+
+/* Hover */
+.status-select:hover {
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
+}
+
+/* Khi đang hiển thị trạng thái */
+.status-active {
+  background-color: #e8f9e8;
+  color: #2e8b57;
+  border-color: #2e8b57;
+}
+
+.status-inactive {
+  background-color: #fdeaea;
+  color: #b22222;
+  border-color: #b22222;
+}
+
+/* Nền menu dropdown luôn trắng */
+.status-select option {
+  background-color: #fff;
+  color: #000;
+}
+
+/* Nút Xem hiện đại */
+.btn-view {
+  background-color: #f0f8ff; /* Xanh nhạt */
+  color: #007bff; /* Xanh đậm */
+  border: 1px solid #007bff;
+  border-radius: 20px; /* Bo tròn */
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Hover */
+.btn-view:hover {
+  background-color: #007bff;
+  color: white;
+  transform: translateY(-1px); /* Nổi nhẹ khi hover */
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+/* Khi nhấn */
+.btn-view:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}

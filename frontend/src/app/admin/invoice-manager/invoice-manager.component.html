@@ -1,6 +1,6 @@
  <div class="main-panel">
 
-  <h1>Hóa đơn tổng hợp</h1>
+  <h1>Tổng hợp hóa đơn</h1>
 
     <div class="invoice-container">
       <div class="filter-section">
@@ -21,6 +21,7 @@
               <option value="">Tất cả</option>
               <option value="Đã gửi phiếu">Đã gửi phiếu</option>
               <option value="Đã duyệt">Đã duyệt</option>
+              <option value="Đã hủy">Đã hủy</option>
               <option value="Đã nhập hàng vào kho">Đã nhập hàng vào kho</option>
               <option value="Đã xuất hàng khỏi kho">Đã xuất hàng khỏi kho</option>
             </select>
@@ -70,20 +71,21 @@
               <td>{{ hd.created_date | date:'dd/MM/yyyy' }}</td>
               <td>{{ hd.total_amount | number:'1.0-0' }} VNĐ</td>
               <td>
-                              <span [ngClass]="{
-                                'status-duyet': hd.trang_thai === 'Đã duyệt',
-                                'status-hoanthanh': hd.trang_thai === 'Đã nhập hàng vào kho' || hd.trang_thai === 'Đã xuất hàng khỏi kho'
-                              }">
-                                {{ hd.trang_thai }}
-                              </span>
-                            </td>
-                <td>
-                <div class="btn-wrapper">
-                  <button class="btn-view" (click)="xemChiTietHoaDon(hd)">
-                    🔍 Xem
-                  </button>
-                  <span *ngIf="hd.trang_thai === 'Đã duyệt nè' && !hd.daXuatHoaDon" class="badge-corner">!</span>
-                </div>
+              <span [ngClass]="{
+                'status-duyet': hd.trang_thai === 'Đã duyệt',
+                'status-hoanthanh': hd.trang_thai === 'Đã nhập hàng vào kho' || hd.trang_thai === 'Đã xuất hàng khỏi kho',
+                'status-huy': hd.trang_thai === 'Đã hủy'
+              }">
+                {{ hd.trang_thai }}
+              </span>
+              </td>
+              <td>
+              <div class="btn-wrapper">
+                <button class="btn-view" (click)="xemChiTietHoaDon(hd)">
+                  🔍 Xem
+                </button>
+                <span *ngIf="hd.trang_thai === 'Đã duyệt nè' && !hd.daXuatHoaDon" class="badge-corner">!</span>
+              </div>
               </td>
             </tr>
 
@@ -103,7 +105,7 @@
                   <h3>PHIẾU NHẬP KHO - WAREHOUSE MANAGER T&H</h3>
 
                   <!-- 🔵 Thanh trạng thái kiểu chấm tròn hiện đại -->
-                  <div class="timeline-container">
+                  <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai !== 'Đã hủy'">
                     <div class="timeline">
                       <div class="step" [ngClass]="getStepClass(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
                         <div class="circle">1</div>
@@ -120,7 +122,18 @@
                         <span>Đã nhập hàng vào kho</span>
                       </div>
                     </div>
-                  </div>  
+                  </div>
+
+                  <!-- Hiện 1 chấm tròn đỏ nếu trạng thái Đã hủy -->
+                  <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai === 'Đã hủy'">
+                    <div class="timeline">
+                      <div class="step">
+                        <div class="circle-huy"></div>
+                        <span>Đã hủy</span>
+                      </div>
+                    </div>
+                  </div>
+
 
                   <!-- Thời gian & NCC -->
                   <div class="info-row">
@@ -208,7 +221,7 @@
 
                   <div style="text-align: right; margin-top: 12px;">
                     <div class="btn-wrapper" style="text-align: right; margin-top: 12px;">
-                      <button class="btn-export" (click)="xuatHoaDonNhap(selectedHoaDon)">
+                      <button class="btn-export" (click)="xuatHoaDonNhapThongMinh(selectedHoaDon)">
                         🧾 Xuất hóa đơn
                       </button>
                       <span 
@@ -227,9 +240,9 @@
 
                     <h3>PHIẾU XUẤT KHO - WAREHOUSE MANAGER T&H</h3>
 
-                    <!-- 🔵 Thanh trạng thái -->
                     <!-- 🔵 Thanh trạng thái kiểu chấm tròn hiện đại -->
-                    <div class="timeline-container">
+                    <!-- Timeline 3 bước (hiển thị khi KHÔNG phải trạng thái Đã hủy) -->
+                    <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai !== 'Đã hủy'">
                       <div class="timeline">
                         <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã gửi phiếu')">
                           <div class="circle">1</div>
@@ -241,12 +254,23 @@
                           <span>Đã duyệt</span>
                         </div>
                         <div class="line"></div>
-                        <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã nhập hàng vào kho')">
+                        <div class="step" [ngClass]="getStepClassXuat(selectedHoaDon.trang_thai, 'Đã xuất hàng khỏi kho')">
                           <div class="circle">3</div>
                           <span>Đã xuất hàng khỏi kho</span>
                         </div>
                       </div>
                     </div>
+
+                    <!-- Chấm đỏ có dấu X và chữ Đã hủy (hiển thị khi trạng thái là Đã hủy) -->
+                    <div class="timeline-container" *ngIf="selectedHoaDon.trang_thai === 'Đã hủy'">
+                      <div class="timeline">
+                        <div class="step">
+                          <div class="circle-huy"></div>
+                          <span>Đã hủy</span>
+                        </div>
+                      </div>
+                    </div>
+
 
                     <!-- Thời gian & NCC -->
                     <div class="info-row">
@@ -343,7 +367,7 @@
 
                     <div style="text-align: right; margin-top: 12px;">
                     <div class="btn-wrapper" style="text-align: right; margin-top: 12px;">
-                      <button class="btn-export" (click)="xuatHoaDonXuat(selectedHoaDon)">
+                      <button class="btn-export" (click)="xuatHoaDonXuatThongMinh(selectedHoaDon)">
                         🧾 Xuất hóa đơn
                       </button>
                       <span 

@@ -122,12 +122,13 @@ ngOnInit(): void {
     return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
   }
 
-   getStepClassXuat(trangThai: string, step: string): string {
-    const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];
-    const currentStepIndex = steps.indexOf(trangThai);
-    const thisStepIndex = steps.indexOf(step);
-    return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
-  }
+getStepClassXuat(trangThai: string, step: string): string {
+  const steps = ['Đã gửi phiếu', 'Đã duyệt', 'Đã xuất hàng khỏi kho'];  // đúng với tên bước 3
+  const currentStepIndex = steps.indexOf(trangThai);
+  const thisStepIndex = steps.indexOf(step);
+  return currentStepIndex >= thisStepIndex ? 'step active' : 'step';
+}
+
 
   
 capNhatPhieuNhap(hd: any) {
@@ -296,7 +297,7 @@ capNhatKhoiLuongVaDienTich(index: number) {
   const quantity = parseInt(sp.quantity) || 0;
 
   sp.weight = +(kgPerUnit * quantity).toFixed(2);     // Trọng lượng = khối lượng mỗi SP * số lượng
-  sp.area = +(sp.weight / 250).toFixed(2);             // Giả định: 1m² chứa 250kg (bạn có thể thay đổi)
+  sp.area = +(sp.weight / 100).toFixed(2);             // Giả định: 1m² chứa 250kg (bạn có thể thay đổi)
 }
 
 xuatHoaDonNhap(hd: any) {

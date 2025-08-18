@@ -384,8 +384,8 @@ textarea {
 
 /*đổi màu*/
 .status-duyet {
-  background-color: #ffe0b2; /* cam nhạt */
-  color: #b75c00;
+  background-color: #d0e8ff;  /* xanh nhạt nền */
+  color: #1565c0;             /* xanh đậm chữ */
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 500;
@@ -521,3 +521,158 @@ input:checked + .slider:before {
   background: #888;
   border-radius: 4px;
 }
+
+.mini-popup {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+}
+
+.mini-popup-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.mini-popup-content input {
+  width: 80%;
+  padding: 8px;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.mini-popup-actions button {
+  margin: 0 10px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-space {
+  margin-right: 10px;  /* Tạo khoảng cách ngang giữa các nút */
+}
+
+.btn-red {
+  background-color: #e74c3c;  /* đỏ nổi bật */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-red:hover:not(:disabled) {
+  background-color: #c0392b;  /* đỏ đậm hơn khi hover */
+}
+
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-blue {
+  background-color: #3498db; /* xanh biển */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-blue:hover {
+  background-color: #2980b9; /* xanh biển đậm hơn khi hover */
+}
+
+.status-huy {
+  background-color: #f8d7da;   /* nền đỏ nhạt */
+  color: #842029;              /* chữ đỏ đậm */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  border: 1px solid #f5c2c7;  /* viền đỏ nhạt */
+}
+
+
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-red {
+  background-color: #e74c3c;  /* đỏ */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-red:hover{
+  background-color: #c0392b;
+}
+
+.btn-space {
+  margin-right: 10px;
+}
+
+.disabled-button-green {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Khi disabled, làm mờ và đổi con trỏ */
+.disabled-button-green:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-bluewater {
+  background-color: #4a90e2; /* xanh nước biển tươi */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.btn-bluewater:hover {
+  background-color: #357ABD; /* xanh đậm hơn khi hover */
+}
+
+.btn-gray {
+  background-color: #e9c913; /* xám vừa, không quá tối */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.btn-gray:hover {
+  background-color: #e9c913; /* xám đậm hơn khi hover */
+}
+

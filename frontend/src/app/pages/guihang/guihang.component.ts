@@ -130,83 +130,33 @@ export class GuihangComponent {
   }
 
   submitForm() {
-    // Check if each product has an image
-    const sanPhamKhongCoAnh = this.formData.products.filter((p: any) => {
-      return !(p.imageFile || p.preview || p.image_url);
-    });
+    // ... các kiểm tra hiện tại trước đó
 
-    if (sanPhamKhongCoAnh.length > 0) {
-      const danhSach = sanPhamKhongCoAnh.map((_: any, idx: number) => `#${idx + 1}`).join(', ');
-      alert(`❌ Các sản phẩm sau chưa có ảnh: ${danhSach}`);
-      return;
-    }
-
-    // Validate user and supplier information
-    if (!this.userInfo.full_name || !this.userInfo.phone || !this.userInfo.address) {
-      alert('❌ Bạn cần cập nhật đầy đủ thông tin cá nhân trước khi gửi hàng.');
-      return;
-    }
-
+    // Validate đại diện nhà cung cấp
     if (
-      !this.formData.created_date ||
-      !this.formData.supplier_name ||
-      !this.formData.supplier_address ||
-      !(this.formData.logo || this.formData.logoPreview)
+      !this.formData.representative_name ||
+      !this.formData.representative_email ||
+      !this.formData.representative_phone
     ) {
-      alert("❌ Vui lòng điền đầy đủ thông tin nhà cung cấp và logo.");
+      alert('❌ Vui lòng điền đầy đủ thông tin đại diện nhà cung cấp.');
       return;
     }
 
-    if (!this.formData.products || this.formData.products.length === 0) {
-      alert("❌ Vui lòng thêm ít nhất 1 sản phẩm.");
+    // Có thể validate email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.formData.representative_email)) {
+      alert('❌ Email đại diện không hợp lệ.');
       return;
     }
 
-    const today = new Date();
-    for (let i = 0; i < this.formData.products.length; i++) {
-      const p = this.formData.products[i];
-
-      // Validate product details
-      if (
-        !p.product_name || !p.product_type || !p.unit || !p.weight ||
-        !p.manufacture_date || !p.expiry_date || !p.quantity || !p.unit_price
-      ) {
-        alert(`❌ Vui lòng nhập đầy đủ thông tin cho sản phẩm số ${i + 1}.`);
-        return;
-      }
-
-      if (+p.weight <= 0 || +p.quantity <= 0 || +p.unit_price <= 0) {
-        alert(`❌ Các giá trị số phải lớn hơn 0 (sản phẩm số ${i + 1}).`);
-        return;
-      }
-
-      const nsx = new Date(p.manufacture_date);
-      const hsd = new Date(p.expiry_date);
-      if (nsx >= hsd || hsd <= today) {
-        alert(`❌ Ngày sản xuất phải < hạn sử dụng và hạn sử dụng phải sau hiện tại (sản phẩm số ${i + 1}).`);
-        return;
-      }
-
-      if (!p.readonly) {
-        const daysDiff = Math.floor((hsd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysDiff < 30) {
-          alert(`❌ Hạn sử dụng phải còn ít nhất 30 ngày (sản phẩm số ${i + 1}).`);
-          return;
-        }
-      }
-
-      // Assign image_url if no new image but an old image exists
-      if (!p.image_url && !p.imageFile && p.preview) {
-        p.image_url = p.preview;
-      }
+    // Validate phone (chỉ chứa số, ít nhất 7 ký tự)
+    const phonePattern = /^[0-9]{7,20}$/;
+    if (!phonePattern.test(this.formData.representative_phone)) {
+      alert('❌ Số điện thoại đại diện không hợp lệ.');
+      return;
     }
 
-    // If no new logo, use the old logo
-    if (!this.formData.logo && this.formData.logoPreview) {
-      this.formData.logo = this.formData.logoPreview;
-    }
-
-    // Create FormData and send
+    // Nếu tất cả hợp lệ, tiếp tục tạo FormData và gửi
     const form = new FormData();
     form.append('created_date', this.formData.created_date);
     form.append('supplier_name', this.formData.supplier_name);
@@ -215,10 +165,13 @@ export class GuihangComponent {
     form.append('note', this.formData.note || '');
     form.append('email', this.userEmail || '');
     form.append('total_amount', this.calculateTotal().toString());
-    form.append('representative_name', this.formData.representative_name || '');
-    form.append('representative_email', this.formData.representative_email || '');
-    form.append('representative_phone', this.formData.representative_phone || '');
 
+    // Thêm thông tin đại diện
+    form.append('representative_name', this.formData.representative_name);
+    form.append('representative_email', this.formData.representative_email);
+    form.append('representative_phone', this.formData.representative_phone);
+
+    // Logo và sản phẩm như trước
     if (this.formData.logo instanceof File) {
       form.append('logo', this.formData.logo);
     } else if (typeof this.formData.logo === 'string') {
@@ -229,12 +182,7 @@ export class GuihangComponent {
       if (p.imageFile) {
         form.append(`product_image_${index}`, p.imageFile);
       }
-      // Add other product data for each product, ensuring it matches backend expectation
-      // If not doing a separate products array, ensure all product properties are sent
-      // in the JSON.stringify('products') part.
     });
-
-    // Sending the products array as a JSON string
     form.append('products', JSON.stringify(this.formData.products));
 
     this.http.post('http://localhost:3000/api/phieu-nhap', form).subscribe({
@@ -252,6 +200,7 @@ export class GuihangComponent {
     });
   }
 
+
   // Khi người dùng thay đổi số lượng hoặc kg/sp, cập nhật lại trọng lượng và diện tích
   updateWeightAndArea(index: number): void {
     const item = this.formData.products[index];
@@ -259,7 +208,7 @@ export class GuihangComponent {
     const kgPerUnit = Number(item.kg_per_unit) || 0;
 
     item.weight = +(quantity * kgPerUnit).toFixed(2);
-    item.area = +(item.weight / 500 * 2).toFixed(2); // Ví dụ: 500kg = 2m²
+    item.area = +(item.weight / 500 * 5).toFixed(2); // Mới: 500kg = 5m²
   }
 
   autoSave() {
@@ -381,7 +330,7 @@ export class GuihangComponent {
 
     if (quantity > 0) {
       item.kg_per_unit = +(weight / quantity).toFixed(2);
-      item.area = +(weight / 500 * 2).toFixed(2); // Cập nhật diện tích luôn
+      item.area = +(weight / 500 * 5).toFixed(2); // Mới: 500kg = 5m²
     }
   }
 

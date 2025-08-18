@@ -57,6 +57,7 @@
           <th class="th-auto-width">Tồn kho</th>
           <th class="th-auto-width">Thực tế</th>
           <th class="th-auto-width">Tình trạng</th>
+          <th class="th-auto-width">Ghi chú</th>
           <th class="th-auto-width">Nhân viên</th>
           <th class="th-auto-width">Thao tác</th>
         </tr>
@@ -80,6 +81,16 @@
             </td>
             <td [ngClass]="getClassTinhTrang(sp)">
               {{ tinhTrang(sp) }}
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <input
+                type="text"
+                [(ngModel)]="sp.ghi_chu"
+                class="form-control form-control-sm"
+                [readonly]="!sp.actual_quantity"
+                (ngModelChange)="onChangeSoLuong(sp)"
+                placeholder="Ghi chú"
+              />
             </td>
             <td>
               <!-- Ưu tiên hiển thị email tạm nếu actual_quantity vừa thay đổi -->

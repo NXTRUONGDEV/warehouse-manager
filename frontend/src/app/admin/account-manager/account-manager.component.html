@@ -79,8 +79,15 @@
                 <!-- 📂 Bộ lọc vai trò -->
                 <select class="form-select role-select" [(ngModel)]="selectedRole" (change)="filterUsers()">
                   <option value="">-- Tất cả vai trò --</option>
-                  <option value="staff">Nhân viên</option>
+                  <option value="user">Nhân viên</option>
                   <option value="admin">Quản trị</option>
+                </select>
+
+                <!-- 📌 Bộ lọc trạng thái -->
+                <select class="form-select role-select" [(ngModel)]="selectedStatus" (change)="filterUsers()">
+                  <option value="">-- Tất cả trạng thái --</option>
+                  <option value="active">Hoạt động</option>
+                  <option value="inactive">Ngưng</option>
                 </select>
 
                 <!-- Nút Thêm -->
@@ -101,6 +108,7 @@
                 <th>Họ tên</th>
                 <th>Email</th>
                 <th>Vai trò</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
               </tr>
             </thead>
@@ -110,11 +118,21 @@
                 <td>{{ user.name }}</td>
                 <td>{{ user.email }}</td>
                 <td>
-                  {{ user.role === 'staff' ? 'Nhân viên' : (user.role === 'admin' ? 'Quản lý kho' : 'Không xác định') }}
+                  {{ user.role === 'user' ? 'Nhân viên' : (user.role === 'admin' ? 'Quản lý kho' : 'Không xác định') }}
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary me-2" (click)="xemThongTin(user)"> Xem</button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="xoaTaiKhoan(user.id)"> Xoá</button>
+                 <select  
+                    class="status-select"
+                    [ngClass]="user.status === 'active' ? 'status-active' : 'status-inactive'"
+                    [(ngModel)]="user.status"
+                    (change)="updateStatus(user)">
+                    <option value="active">Hoạt động</option>
+                    <option value="inactive">Ngưng</option>
+                  </select>
+                </td>
+                <td>
+                  <button class="btn-view" (click)="xemThongTin(user)">Xem thông tin</button>
+                  <!--<button class="btn btn-sm btn-outline-danger" (click)="xoaTaiKhoan(user.id)"> Xoá</button>-->
                 </td>
               </tr>
             </tbody>
@@ -153,6 +171,34 @@
             </div>
           </div>
 
+
+          <!-- Form Thêm Tài Khoản -->
+          <div *ngIf="showAccountForm" class="modal-backdrop">
+            <div class="modal-content">
+              <h3>Thêm tài khoản</h3>
+
+              <label>Họ và tên:</label>
+              <input type="text" [(ngModel)]="newUser.name" placeholder="Nhập tên tài khoản" />
+
+              <label>Email:</label>
+              <input type="email" [(ngModel)]="newUser.email" placeholder="Nhập email" />
+
+              <label>Mật khẩu:</label>
+              <input type="password" [(ngModel)]="newUser.password" placeholder="Nhập mật khẩu" />
+
+              <label>Vai trò:</label>
+              <select [(ngModel)]="newUser.role">
+                <option value="user">Nhân viên</option>
+                <option value="admin">Quản trị</option>
+              </select>
+
+              <div class="form-buttons">
+                <button class="btn btn-success" (click)="themTaiKhoan()">Lưu</button>
+                <button class="btn btn-secondary" (click)="showAccountForm = false">Hủy</button>
+              </div>
+            </div>
+          </div>
+          
 
 
         

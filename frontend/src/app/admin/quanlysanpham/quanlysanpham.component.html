@@ -156,7 +156,7 @@
         <!-- Cột thao tác hiển thị theo cột, chặn sự kiện click -->
         <td (click)="$event.stopPropagation()" class="action-buttons column-buttons">
         <button class="btn btn-edit" (click)="moPopupCapNhat(sp); $event.stopPropagation()">Cập nhật</button>
-        <button class="btn btn-delete" (click)="xoaSanPham(sp.id); $event.stopPropagation()">Xóa</button>
+        <button class="btn btn-delete" (click)="xoaSanPham(sp.product_code); $event.stopPropagation()">Xóa</button>
         </td>
 
     </tr>
@@ -273,13 +273,28 @@
             />
 
             <!-- Khối lượng mỗi đơn vị -->
+             <!-- Khối lượng mỗi đơn vị -->
             <label>Khối lượng mỗi đơn vị (kg):</label>
             <input 
               type="number" 
               step="0.1"
               [(ngModel)]="sanPhamCapNhat.weight_per_unit"
               name="weight_per_unit"
-              (ngModelChange)="capNhatTongKhoiLuong()" />
+              (ngModelChange)="onWeightPerUnitChange($event)" 
+              readonly
+            />
+
+            <!-- Nút lưu ngay bên trong khung -->
+            <div class="form-buttons" style="grid-column: span 2; text-align: right;">
+              <button 
+                *ngIf="hienNutLuuWeight" 
+                type="button" 
+                class="btn-luu" 
+                (click)="moPopupChonLocation()">
+                Phân bổ lại
+              </button>
+            </div>
+
 
 
             <!-- Giá mỗi đơn vị -->
@@ -321,12 +336,12 @@
                 <td>
                   <input 
                     type="number" 
-                    [(ngModel)]="dong.quantity" 
-                    name="quantity_{{dong.id}}" 
-                    (ngModelChange)="capNhatTongKhoiLuong()" />
+                    [ngModel]="dong.quantity || 0" 
+                    (ngModelChange)="dong.quantity = $event || 0; capNhatTongKhoiLuong()" 
+                    name="quantity_{{dong.id}}" />
                 </td>
                 <td>
-                  <button type="button" (click)="capNhatSoLuongTheoDong(dong)">💾 Lưu</button>
+                  <button class="btn-luu" (click)="capNhatSoLuongTheoDong(dong)">Lưu</button>
                 </td>
               </tr>
             </tbody>
@@ -361,10 +376,64 @@
         
         <!-- 🔹 NÚT LƯU -->
         <div class="text-end mt-3">
-          <button class="btn-luu" type="submit"> Hoàn tất cập nhật</button>
+          <button type="button" class="btn-luu" (click)="capNhatSanPham(true)">
+            Hoàn tất cập nhật
+          </button>
         </div>
       </form>
     </div>
 
+    <!-- Popup chọn location -->
+    <div class="popup-overlay" *ngIf="hienPopupChonLocation" (click)="dongPopupChonLocation()"></div>
+    <div class="popup" *ngIf="hienPopupChonLocation">
+      <h3>Chọn vị trí trong khu vực {{ sanPhamCapNhat.ten_khu_vuc }}</h3>
+      <button class="close-btn" (click)="dongPopupChonLocation()">✖</button>
+
+      <!-- ✅ Hiển thị số đã phân bổ -->
+      <div style="margin-bottom: 12px;">
+        <h4><strong>Đã phân bổ:</strong></h4>
+        - Số lượng: {{ getSoLuongDaThem() }} / {{ sanPhamCapNhat.quantity }} thùng<br>
+        - Khối lượng: {{ getKhoiLuongDaThem().toFixed(2) }} / {{ sanPhamCapNhat.weight }} kg
+
+        <!-- ✅ Nhóm nút điều khiển -->
+        <div class="map-action-buttons" style="margin-top:8px;">
+          <button (click)="tuDongThemHetVaoPallet()" class="btn-blue">
+            Tự động thêm hết vào pallet
+          </button>
+          &nbsp;
+          <button (click)="thuHoiTatCaPallet()" class="btn-red">
+            Thu hồi toàn bộ
+          </button>
+        </div>
+      </div>
+
+
+      <div class="location-grid-map">
+        <div *ngFor="let row of locationGrid" class="location-row">
+          <div *ngFor="let loc of row" 
+              class="location-box"
+              [title]="'KL: ' + (loc.weightUsed + loc.tempWeight) + 'kg / 500kg'"
+              [ngClass]="{
+                'location-empty': loc.weightUsed + loc.tempWeight === 0,
+                'location-used': loc.weightUsed + loc.tempWeight > 0 && loc.weightUsed + loc.tempWeight < 500 && loc.tempWeight === 0,
+                'location-full': loc.weightUsed + loc.tempWeight >= 500 && loc.tempWeight === 0,
+                'location-selected': loc.tempWeight > 0
+              }"
+              (click)="chonLocation(loc)">
+            <div class="location-content">
+              <span *ngIf="(loc.weightUsed + loc.tempWeight) === 0">＋</span>
+              <span *ngIf="(loc.weightUsed + loc.tempWeight) > 0">{{ loc.weightUsed + loc.tempWeight }} kg</span>
+            </div>
+            <div class="location-label">{{ loc.name }}</div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="text-end mt-3">
+        <button class="btn-luu" (click)="xacNhanCapNhatWeight()">Xác nhận</button>
+        <button class="btn-huy" (click)="dongPopupChonLocation()">Hủy</button>
+      </div>
+    </div>
 
 </div>

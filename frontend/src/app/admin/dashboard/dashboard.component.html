@@ -3,35 +3,18 @@
     <div class="page-inner">
       <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
         <div>
-          <h3 class="fw-bold mb-3">Dashboard</h3>
-          <h6 class="op-7 mb-2">Free Bootstrap 5 Admin Dashboard</h6>
+          <h3 class="fw-bold mb-3">Bảng điều khiển</h3>
+          <h6 class="op-7 mb-2">Hệ thống kho hàng T&H Warehouse Manager</h6>
         </div>
         <div class="ms-md-auto py-2 py-md-0">
-          <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
-          <a href="#" class="btn btn-primary btn-round">Add Customer</a>
+          <a href="/admin/duyetphieunhap" class="btn btn-label-info btn-round me-2">Phiếu nhập</a>
+          <a href="/admin/duyetphieuxuat" class="btn btn-label-info btn-round me-2">Phiếu xuất</a>
         </div>
       </div>
+
       <div class="row">
-        <div class="col-sm-6 col-md-3">
-          <div class="card card-stats card-round">
-            <div class="card-body">
-              <div class="row align-items-center">
-                <div class="col-icon">
-                  <div class="icon-big text-center icon-primary bubble-shadow-small">
-                    <img src="assets/img/xuatkho.png" alt="Tổng phiếu xuất" style="height: 40px; width: 40px;">
-                  </div>
-                </div>
-                <div class="col col-stats ms-3 ms-sm-0">
-                  <div class="numbers">
-                    <p class="card-category"> Tổng phiếu xuất</p>
-                    <h4 class="card-title">{{ tongPhieuXuat }}</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-3">
+
+        <div class="col-sm-6 col-md-3" onclick="window.location.href='/admin/invoice-manager'" style="cursor: pointer;">
           <div class="card card-stats card-round">
             <div class="card-body">
               <div class="row align-items-center">
@@ -50,7 +33,28 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-md-3">
+
+        <div class="col-sm-6 col-md-3" onclick="window.location.href='/admin/invoice-manager'" style="cursor: pointer;">
+          <div class="card card-stats card-round">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-icon">
+                  <div class="icon-big text-center icon-primary bubble-shadow-small">
+                    <img src="assets/img/xuatkho.png" alt="Tổng phiếu xuất" style="height: 40px; width: 40px;">
+                  </div>
+                </div>
+                <div class="col col-stats ms-3 ms-sm-0">
+                  <div class="numbers">
+                    <p class="card-category"> Tổng phiếu xuất</p>
+                    <h4 class="card-title">{{ tongPhieuXuat }}</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-md-3" onclick="window.location.href='/admin/quanlyhangton'" style="cursor: pointer;">
           <div class="card card-stats card-round">
             <div class="card-body">
               <div class="row align-items-center">
@@ -61,7 +65,7 @@
                 </div>
                 <div class="col col-stats ms-3 ms-sm-0">
                   <div class="numbers">
-                    <p class="card-category">Sản phẩm sắp hết hàng trong kho (số lượng dưới 100)</p>
+                    <p class="card-category">Sản phẩm sắp hết hàng</p>
                     <h4 class="card-title">{{sapHetList.length}}</h4>
                   </div>
                 </div>
@@ -69,19 +73,20 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-md-3">
+
+        <div class="col-sm-6 col-md-3" onclick="window.location.href='/admin/location-manager'" style="cursor: pointer;">
           <div class="card card-stats card-round">
             <div class="card-body">
               <div class="row align-items-center">
                 <div class="col-icon">
-                  <div class="icon-big text-center icon-secondary bubble-shadow-small">
-                    <i class="far fa-check-circle"></i>
+                  <div class="icon-big text-center icon-primary bubble-shadow-small">
+                    <img src="assets/img/location.png" style="height: 40px; width: 40px;">
                   </div>
                 </div>
                 <div class="col col-stats ms-3 ms-sm-0">
                   <div class="numbers">
-                    <p class="card-category">Sản phẩm sắp hết hạn</p>
-                    <h4 class="card-title">576</h4>
+                    <p class="card-category">Vị trí còn trống</p>
+                    <h4 class="card-title">{{ totalFreePositions === 0 ? 'Đang tải...' : totalFreePositions }}</h4>
                   </div>
                 </div>
               </div>
@@ -89,375 +94,230 @@
           </div>
         </div>
       </div>
+
       <div class="row">
         <div class="col-md-8">
           <div class="card card-round">
-            <div class="card-header">
-              <div class="card-head-row">
-                <div class="card-title">Thống kê dữ liệu nhập xuất</div>
-                <div class="card-tools">
-                  <a href="#" class="btn btn-label-success btn-round btn-sm me-2">
-                    <span class="btn-label">
-                      <i class="fa fa-pencil"></i>
-                    </span>
-                    Export
-                  </a>
-                  <a href="#" class="btn btn-label-info btn-round btn-sm">
-                    <span class="btn-label">
-                      <i class="fa fa-print"></i>
-                    </span>
-                    Print
-                  </a>
-                </div>
-              </div>
-              <div class="card mt-2">
-                <label for="filterType" class="form-label">Chọn loại thống kê:</label>
-                <select id="filterType" class="form-select w-auto" [(ngModel)]="filterType" (change)="layDuLieuNhapXuat()">
-                  <option value="ngay">Theo Ngày</option>
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h2 class="card-title">
+                {{ showLocationChart ? 'Sức chứa kho theo vị trí' : 'Thống kê dữ liệu nhập xuất' }}
+              </h2>
+
+              <!-- Nút xuất Excel -->
+              <button class="btn btn-label-success btn-round btn-sm" (click)="exportExcel()">
+                <span class="btn-label"><i class="fa fa-file-excel"></i></span> Xuất Excel
+              </button>
+            </div>
+
+            <div class="card mt-2 px-3">
+               <!-- Bộ lọc cho biểu đồ nhập/xuất -->
+              <div *ngIf="!showLocationChart">
+                <label for="filterType" class="form-label me-3">Chọn loại thống kê:</label>
+                <select id="filterType" class="form-select w-auto d-inline-block"
+                  [(ngModel)]="filterType" (change)="layDuLieuNhapXuat()">
                   <option value="thang">Theo Tháng</option>
+                  <option value="ngay">Theo Ngày</option>
                 </select>
               </div>
-              <canvas baseChart
+
+              <!-- Bộ lọc riêng cho biểu đồ sức chứa kho -->
+              <div *ngIf="showLocationChart" class="mb-3">
+                <label for="locationChartTypeSelect" class="form-label me-3">Chọn kiểu biểu đồ sức chứa:</label>
+                <select id="locationChartTypeSelect" class="form-select w-auto d-inline-block"
+                  [(ngModel)]="locationChartType"
+                  (change)="loadSucChuaKho()">
+                  <option value="bar">Thanh xếp chồng</option>
+                   <option value="pie">Tròn</option>
+                </select>
+              </div>
+
+
+            </div>
+
+            <div class="card-body d-flex align-items-center justify-content-center position-relative">
+
+              <!-- Nút mũi tên trái -->
+              <button
+                class="btn btn-sm btn-icon btn-primary position-absolute start-0 top-50 translate-middle-y ms-2"
+                (click)="prevChart()"
+                title="Biểu đồ trước"
+                style="z-index:10; color: white; font-size: 18px; font-weight: bold; line-height: 1;">
+                ‹
+              </button>
+
+              <!-- Biểu đồ nhập xuất -->
+              <canvas *ngIf="!showLocationChart" baseChart
                 [datasets]="barChartData"
                 [labels]="barChartLabels"
                 [options]="barChartOptions"
-                [type]="barChartType">
+                [type]="barChartType"
+                style="max-width: 90%; max-height: 400px;">
               </canvas>
-            </div>
-            <div class="card-body">
-              <div class="chart-container" style="min-height: 375px">
-                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
-                  <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                    <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
-                  </div>
-                  <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                    <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
-                  </div>
-                </div>
-                <canvas id="statisticsChart" width="691" height="468" style="display: block; height: 375px; width: 553px;" class="chartjs-render-monitor"></canvas>
+
+              <!-- Biểu đồ sức chứa kho -->
+              <div
+                *ngIf="showLocationChart"
+                class="mt-3"
+                style="width: 90%; max-height: 450px; position: relative; margin: auto;">
+                
+                <h5 class="mb-3 text-center">Tổng sức chứa kho đã dùng: {{ totalUsedPercent }}%</h5>
+
+                <canvas baseChart
+                  [data]="khuVucChartDataFull"
+                  [options]="khuVucChartOptions"
+                  [type]="khuVucChartType"
+                  style="max-width: 90%; max-height: 400px;">
+                </canvas>
               </div>
-              <div id="myChartLegend">
-                <ul class="0-legend html-legend">
-                  <li><span style="background-color:#f3545d"></span>Subscribers</li>
-                  <li><span style="background-color:#fdaf4b"></span>New Visitors</li>
-                  <li><span style="background-color:#177dff"></span>Active Users</li>
-                </ul>
-              </div>
+
+              <!-- Nút mũi tên phải -->
+              <button
+                class="btn btn-sm btn-icon btn-primary position-absolute end-0 top-50 translate-middle-y me-2"
+                (click)="nextChart()"
+                title="Biểu đồ kế tiếp"
+                style="z-index:10; color: white; font-size: 18px; font-weight: bold; line-height: 1;">
+                ›
+              </button>
+
             </div>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card card-primary card-round">
+          <div
+            class="card card-primary card-round"
+            style="background-color: #0caaee !important; color: white !important;"
+          > 
+            <div class="card-body pb-0 text-white">
+              
+              <!-- Tiêu đề -->
+              <h2 class="mb-2">Tổng giá trị tồn kho</h2>
+
+              <!-- Tổng giá trị tồn kho -->
+              <div class="h1 fw-bold mb-2" style="color:#42ed49">
+                {{ tongGiaTriTonKho | number:'1.0-0' }} ₫
+              </div>
+
+
+
+              <!-- Phiếu nhập & xuất -->
+              <p style="color: white; font-size: 0.9rem;">
+                Phiếu nhập: {{ tongNhap | number:'1.0-0' }} ₫ | 
+                Phiếu xuất: {{ tongXuat | number:'1.0-0' }} ₫
+              </p>
+
+              <!-- Biểu đồ doanh thu 7 phiếu gần nhất -->
+              <div class="sparkline-fix mt-2">
+                <canvas id="doanhThuChart" height="120"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card card-round ai-summary-card">
             <div class="card-header">
               <div class="card-head-row">
-                <div class="card-title">Daily Sales</div>
+                <div class="card-title">Tóm tắt thống kê AI</div>
                 <div class="card-tools">
-                  <div class="dropdown">
-                    <button class="btn btn-sm btn-label-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      Export
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                  </div>
+                  <button class="btn btn-primary btn-sm" (click)="getAISummary()" [disabled]="loading" [class.loading]="loading">
+                    {{ loading ? 'Đang xử lý...' : 'Tóm tắt AI' }}
+                  </button>
                 </div>
-              </div>
-              <div class="card-category">March 25 - April 02</div>
-            </div>
-            <div class="card-body pb-0">
-              <div class="mb-4 mt-2">
-                <h1>$4,578.58</h1>
-              </div>
-              <div class="pull-in">
-                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
-                  <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                    <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
-                  </div>
-                  <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                    <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
-                  </div>
-                </div>
-                <canvas id="dailySalesChart" width="348" height="187" style="display: block; height: 150px; width: 279px;" class="chartjs-render-monitor"></canvas>
               </div>
             </div>
-          </div>
-          <div class="card card-round">
+
             <div class="card-body pb-0">
-              <div class="h1 fw-bold float-end text-primary">+5%</div>
-              <h2 class="mb-2">17</h2>
-              <p class="text-muted">Users online</p>
-              <div class="pull-in sparkline-fix">
-                <div id="lineChart">
-                  <canvas width="363" height="70" style="display: inline-block; width: 363.8px; height: 70px; vertical-align: top;"></canvas>
+              <div style="max-height: 250px; overflow-y: auto;">
+                <div class="ai-summary-text" [class.fade-in]="!loading">
+                  {{ aiSummary || 'Nhấn nút "Tóm tắt thống kê" để lấy kết quả.' }}
                 </div>
+                <br>
               </div>
             </div>
           </div>
         </div>
       </div>
+
       <div class="row">
-        <div class="col-md-12">
-          <div class="card card-round">
-            <div class="card-header">
-              <div class="card-head-row card-tools-still-right">
-                <h4 class="card-title">Users Geolocation</h4>
-                <div class="card-tools">
-                  <button class="btn btn-icon btn-link btn-primary btn-xs">
-                    <span class="fa fa-angle-down"></span>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card">
-                    <span class="fa fa-sync-alt"></span>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-primary btn-xs">
-                    <span class="fa fa-times"></span>
-                  </button>
-                </div>
-              </div>
-              <p class="card-category">
-                Map of the distribution of users around the world
-              </p>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="table-responsive table-hover table-sales">
-                    <table class="table">
-                      <tbody>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/id.png" alt="indonesia">
-                            </div>
-                          </td>
-                          <td>Indonesia</td>
-                          <td class="text-end">2.320</td>
-                          <td class="text-end">42.18%</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/us.png" alt="united states">
-                            </div>
-                          </td>
-                          <td>USA</td>
-                          <td class="text-end">240</td>
-                          <td class="text-end">4.36%</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/au.png" alt="australia">
-                            </div>
-                          </td>
-                          <td>Australia</td>
-                          <td class="text-end">119</td>
-                          <td class="text-end">2.16%</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/ru.png" alt="russia">
-                            </div>
-                          </td>
-                          <td>Russia</td>
-                          <td class="text-end">1.081</td>
-                          <td class="text-end">19.65%</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/cn.png" alt="china">
-                            </div>
-                          </td>
-                          <td>China</td>
-                          <td class="text-end">1.100</td>
-                          <td class="text-end">20%</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="flag">
-                              <img src="assets/img/flags/br.png" alt="brazil">
-                            </div>
-                          </td>
-                          <td>Brasil</td>
-                          <td class="text-end">640</td>
-                          <td class="text-end">11.63%</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4"> 
           <div class="card card-round">
             <div class="card-body">
               <div class="card-head-row card-tools-still-right">
-                <div class="card-title">New Customers</div>
-                <div class="card-tools">
-                  <div class="dropdown">
-                    <button class="btn btn-icon btn-clean me-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                  </div>
-                </div>
+                <div class="card-title">Danh sách nhà cung cấp</div>
               </div>
-              <div class="card-list py-4">
-                <div class="item-list">
+              
+              <!-- Giới hạn chiều cao + cuộn -->
+              <div class="card-list py-4" style="max-height: 300px; overflow-y: auto;">
+                <div class="item-list" *ngFor="let ncc of nhaCungCapList">
                   <div class="avatar">
-                    <img src="assets/img/jm_denis.jpg" alt="..." class="avatar-img rounded-circle">
+                    <img *ngIf="ncc.logo_url" 
+                        [src]="ncc.logo_url" 
+                        alt="Logo" 
+                        class="avatar-img rounded-circle">
+                    <span *ngIf="!ncc.logo_url" 
+                          class="avatar-title rounded-circle border border-white bg-secondary">
+                      {{ ncc.supplier_name.charAt(0) }}
+                    </span>
                   </div>
+
                   <div class="info-user ms-3">
-                    <div class="username">Jimmy Denis</div>
-                    <div class="status">Graphic Designer</div>
+                    <div class="username">{{ ncc.supplier_name }}</div>
+                    <div class="status">{{ ncc.supplier_address || 'Không có địa chỉ' }}</div>
                   </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </div>
-                <div class="item-list">
-                  <div class="avatar">
-                    <span class="avatar-title rounded-circle border border-white">CF</span>
+
+                  <div class="ms-auto text-end">
+                    <div class="fw-bold">{{ ncc.tong_phieu }} phiếu</div>
+                    <small class="text-muted">Nhập hàng</small>
                   </div>
-                  <div class="info-user ms-3">
-                    <div class="username">Chandra Felix</div>
-                    <div class="status">Sales Promotion</div>
-                  </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </div>
-                <div class="item-list">
-                  <div class="avatar">
-                    <img src="assets/img/talha.jpg" alt="..." class="avatar-img rounded-circle">
-                  </div>
-                  <div class="info-user ms-3">
-                    <div class="username">Talha</div>
-                    <div class="status">Front End Designer</div>
-                  </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </div>
-                <div class="item-list">
-                  <div class="avatar">
-                    <img src="assets/img/chadengle.jpg" alt="..." class="avatar-img rounded-circle">
-                  </div>
-                  <div class="info-user ms-3">
-                    <div class="username">Chad</div>
-                    <div class="status">CEO Zeleaf</div>
-                  </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </div>
-                <div class="item-list">
-                  <div class="avatar">
-                    <span class="avatar-title rounded-circle border border-white bg-primary">H</span>
-                  </div>
-                  <div class="info-user ms-3">
-                    <div class="username">Hizrian</div>
-                    <div class="status">Web Designer</div>
-                  </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </div>
-                <div class="item-list">
-                  <div class="avatar">
-                    <span class="avatar-title rounded-circle border border-white bg-secondary">F</span>
-                  </div>
-                  <div class="info-user ms-3">
-                    <div class="username">Farrah</div>
-                    <div class="status">Marketing</div>
-                  </div>
-                  <button class="btn btn-icon btn-link op-8 me-1">
-                    <i class="far fa-envelope"></i>
-                  </button>
-                  <button class="btn btn-icon btn-link btn-danger op-8">
-                    <i class="fas fa-ban"></i>
-                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+
+        <div class="col-md-8"> 
           <div class="card card-round">
             <div class="card-header">
               <div class="card-head-row card-tools-still-right">
-                <div class="card-title">Lịch sử yêu cầu duyệt đơn</div>
+                <div class="card-title">Lịch sử kiểm kê</div>
                 <div class="card-tools">
                   <div class="dropdown">
-                    <button class="btn btn-icon btn-clean me-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-icon btn-clean me-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
                       <i class="fas fa-ellipsis-h"></i>
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
+                      <a class="dropdown-item" href="#">Xuất Excel</a>
+                      <a class="dropdown-item" href="#">Xem chi tiết</a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table align-items-center mb-0">
+              <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table class="table align-items-center mb-0 table-header-auto">
                   <thead class="thead-light">
                     <tr>
-                      <th scope="col">Nhân viên</th>
-                      <th scope="col" class="text-end">Mã Phiếu</th>
-                      <th scope="col" class="text-end">Ngày </th>
-                      <th scope="col" class="text-end">Số Lượng</th>
-                      <th scope="col" class="text-end">Giá trị</th>
-                      <th scope="col" class="text-end">Trạng Thái</th>
+                      <th scope="col">Tên đợt</th>
+                      <th scope="col">Mã đợt</th>
+                      <th scope="col">Ngày tạo</th>
+                      <th scope="col">Số lượng</th>
+                      <th scope="col">Trạng Thái</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let phieu of danhSachPhieu">
-                      <th scope="row">
-                        <button class="btn btn-icon btn-round btn-success btn-sm me-2">
-                          <i class="fa fa-check"></i>
-                        </button>
-                        {{ phieu.receiver_name }}
-                      </th>
-                      <td class="text-end">{{ phieu.receipt_code }}</td>
-                      <td class="text-end">{{ phieu.delivery_date | date:'dd/MM/yyyy' }}</td>
-                      <td class="text-end">{{ phieu.quantity }}</td>
-                      <td class="text-end">{{ phieu.total_amount | currency:'VND':'symbol':'1.0-0' }}</td>
-                      <td class="text-end">
-                        <span class="badge" [ngClass]="{
-                            'badge-success': phieu.trang_thai === 'Đã xuất hàng khỏi kho',
-                            'badge-warning': phieu.trang_thai === 'Chờ xác nhận',
-                            'badge-danger': phieu.trang_thai === 'Đã hủy'}">
-                          {{ phieu.trang_thai }}
+                    <tr *ngFor="let dot of lichSuKiemKe">
+                      <td>{{ dot.ten_dot }}</td>
+                      <td>{{ dot.ma_dot }}</td>
+                      <td>{{ dot.created_at | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ dot.so_san_pham }}</td>
+                      <td>
+                        <span class="badge"
+                          [ngClass]="{
+                            'badge-success': dot.status === 'da_ket_thuc',
+                            'badge-warning': dot.status === 'dang_kiem'
+                          }">
+                          {{ dot.status === 'da_ket_thuc' ? 'Đã kết thúc' :
+                            dot.status === 'dang_kiem' ? 'Đang kiểm' :
+                            dot.status }}
                         </span>
                       </td>
                     </tr>
@@ -465,41 +325,15 @@
                 </table>
               </div>
             </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
-  <footer class="footer">
-    <div class="container-fluid d-flex justify-content-between">
-      <nav class="pull-left">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="http://www.themekita.com">
-              ThemeKita
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#"> Help </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#"> Licenses </a>
-          </li>
-        </ul>
-      </nav>
-      <div class="copyright">
-        2024, made with <i class="fa fa-heart heart text-danger"></i> by
-        <a href="http://www.themekita.com">ThemeKita</a>
-      </div>
-      <div>
-        Distributed by
-        <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
-      </div>
-    </div>
-  </footer>
 </div>
 
-       <!--   Core JS Files   -->
+    <!--   Core JS Files   -->
     <script src="../../../assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="../../../assets/js/core/popper.min.js"></script>
     <script src="../../../assets/js/core/bootstrap.min.js"></script>

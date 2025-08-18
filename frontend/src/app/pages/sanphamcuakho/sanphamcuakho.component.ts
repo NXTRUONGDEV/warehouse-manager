@@ -88,37 +88,36 @@ export class SanphamcuakhoComponent implements OnInit {
   }
 
   themVaoPhieuMua(sp: any) {
-  const quantity = 1;
+    const quantity = 1;
 
-  const weightPerUnit = sp.weight_per_unit || (sp.weight && sp.quantity ? sp.weight / sp.quantity : 0);
-  
-  const spDuocChon = {
-    product_name: sp.product_name,
-    product_type: sp.product_type,
-    product_code: sp.product_code,
-    unit: sp.unit,
-    quantity,
-    weight_per_unit: weightPerUnit,
-    weight: quantity * weightPerUnit,  // ✅ Tính lại đúng trọng lượng ban đầu
-    area: sp.area || 0,
-    manufacture_date: sp.manufacture_date || '',
-    expiry_date: sp.expiry_date || '',
-    unit_price: sp.unit_price || 0,
-    imageFile: null,
-    preview: sp.image_url || ''
-  };
+    const weightPerUnit = sp.weight_per_unit || (sp.weight && sp.quantity ? sp.weight / sp.quantity : 0);
 
-  const ok = this.phieuMuaService.addProduct(spDuocChon);
+    const spDuocChon = {
+      product_name: sp.product_name,
+      product_type: sp.product_type,
+      product_code: sp.product_code,
+      unit: sp.unit,
+      quantity, // số lượng đặt mua có thể chỉnh sau
+      original_quantity: sp.quantity || sp.stock_quantity || 0,  // 🆕 Số lượng tồn gốc đúng
+      weight_per_unit: weightPerUnit,
+      weight: quantity * weightPerUnit,
+      area: sp.area || 0,
+      manufacture_date: sp.manufacture_date || '',
+      expiry_date: sp.expiry_date || '',
+      unit_price: sp.unit_price || 0,
+      imageFile: null,
+      preview: sp.image_url || ''
+    };
 
-  if (ok) {
-    alert('✅ Đã thêm sản phẩm vào đơn hàng!');
-    this.selectedProduct = null;
-  } else {
-    alert('⚠️ Sản phẩm đã có trong đơn hàng!');
+    const ok = this.phieuMuaService.addProduct(spDuocChon);
+
+    if (ok) {
+      alert('✅ Đã thêm sản phẩm vào đơn hàng!');
+      this.selectedProduct = null;
+    } else {
+      alert('⚠️ Sản phẩm đã có trong đơn hàng!');
+    }
   }
-}
-
-
 
 
 }

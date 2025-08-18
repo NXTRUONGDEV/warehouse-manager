@@ -41,19 +41,53 @@
             <td>{{ p.receiver_name }}</td>
             <td>{{ p.created_date | date:'dd/MM/yyyy' }}</td>
             <td>
-            <span [ngClass]="{
+                <!-- Trạng thái -->
+                <span [ngClass]="{
                 'status-duyet': p.trang_thai === 'Đã duyệt',
-                'status-dahoanthanh': p.trang_thai === 'Đã xuất hàng khỏi kho'
+                'status-dahoanthanh': p.trang_thai === 'Đã xuất hàng khỏi kho',
+                'status-huy': p.trang_thai === 'Đã hủy'
                 }">
                 {{ p.trang_thai }}
-            </span>
+                </span>
             </td>
             <td>
-                <button *ngIf="p.trang_thai === 'Đã gửi phiếu'" (click)="xemChiTiet(p)">Kiểm tra duyệt phiếu</button>
-                <button *ngIf="p.trang_thai === 'Đã duyệt'" (click)="xemChiTiet(p)">Xác nhận hàng đã xuất kho</button>
-                <button *ngIf="p.trang_thai === 'Đã xuất hàng khỏi kho'" class="disabled-button" disabled>✔️ Hoàn thành</button>
+                <!-- Nút Kiểm tra duyệt phiếu -->
+                <button *ngIf="p.trang_thai === 'Đã gửi phiếu' && p.trang_thai !== 'Đã hủy'" 
+                        (click)="xemChiTiet(p)" 
+                        class="btn-space btn-gray">
+                Kiểm tra duyệt phiếu
+                </button>
+
+                <!-- Nút xác nhận -->
+                <button *ngIf="p.trang_thai === 'Đã duyệt'" 
+                        (click)="xemChiTiet(p)" 
+                        class="btn-confirm">
+                Xác nhận hàng đã xuất kho
+                </button>
+
+                &nbsp;
+            
+                <button 
+                *ngIf="p.trang_thai === 'Đã gửi phiếu' || p.trang_thai === 'Đã hủy' || p.trang_thai === 'Đã duyệt'"
+                (click)="huyPhieu(p)" 
+                [disabled]="p.trang_thai === 'Đã hủy'"
+                [ngClass]="{
+                    'disabled-button': p.trang_thai === 'Đã hủy',
+                    'btn-red': true,
+                    'btn-space': true
+                }">
+                Hủy phiếu
+                </button>
+
+
+                <!-- Nút hoàn thành -->
+                <button *ngIf="p.trang_thai === 'Đã xuất hàng khỏi kho'" class="disabled-button btn-green" disabled>
+                Hoàn thành
+                </button>
             </td>
             </tr>
+
+
 
             <!-- Dòng chi tiết nằm ngay bên dưới -->
             <tr *ngIf="selectedPhieu?.id === p.id">
@@ -191,12 +225,12 @@
                     </div>
                     
 
-                    <!-- 📦 POPUP Xác nhận nhập kho -->
+                    <!-- 📦 POPUP Xác nhận xuất kho -->
                     <div class="modal" *ngIf="popupNhapKhoMo">
                     <div class="modal-content wide-modal">
 
                         <!-- Thông tin phiếu -->
-                        <h3>📦 Xác nhận xuất kho cho phiếu: {{ selectedPhieu.receipt_code }}</h3>
+                        <h3>Xác nhận xuất kho cho phiếu: {{ selectedPhieu.receipt_code }}</h3>
 
                         <!-- Bộ lọc mã sản phẩm -->
                         <!-- 🔍 Bộ lọc kiểm tra sản phẩm trùng mã -->
@@ -207,7 +241,7 @@
                             placeholder="🔍 Nhập mã sản phẩm..."
                             class="filter-input input-field"
                             />
-                            <button (click)="kiemTraTrongKho()">🔁 Kiểm tra</button>
+                            <button (click)="kiemTraTrongKho()">Kiểm tra</button>
                         </div>
 
                         <div class="check-result">
@@ -274,12 +308,19 @@
 
 
 
-                        <!-- Logo và tên nhà cung cấp -->
+                        <!-- Logo và tên bên nhận hàng -->
                         <div style="display: flex; align-items: center; gap: 20px; margin-top: 10px;" class="supplier-logo">
                         <div>
-                            <p><strong>🏢 Tên nhà cung cấp:</strong> {{ selectedPhieu.supplier_name }} <img [src]="selectedPhieu.logo_url" alt="Logo nhà cung cấp" /></p>
+                            <p><strong>Tên bên nhận hàng:</strong> {{ selectedPhieu.receiver_name }}</p>
+                            <ng-container *ngIf="selectedPhieu.logo_url && selectedPhieu.logo_url.trim() !== ''">
+                            <img [src]="selectedPhieu.logo_url" alt="Logo bên nhận hàng" />
+                            </ng-container>
+                            <ng-container *ngIf="!selectedPhieu.logo_url || selectedPhieu.logo_url.trim() === ''">
+                            <span style="color: gray; font-style: italic;">(Không có logo)</span>
+                            </ng-container>
                         </div>
                         </div>
+
 
                         <br>
 
@@ -328,7 +369,7 @@
 
                         <!-- Tổng tiền -->
                         <div class="total-amount" style="margin-top: 15px;">
-                        <strong>💰 Tổng cộng:</strong> {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ
+                        <strong> Tổng cộng:</strong> {{ selectedPhieu.total_amount | number:'1.0-0' }} VNĐ
                         </div>
 
                         <!-- Nút hành động -->
@@ -339,10 +380,10 @@
                         (click)="hoanTatKiemTra()"
                         [disabled]="selectedPhieu?.trang_thai === 'Đã xuất hàng khỏi kho'"
                         [ngStyle]="{ opacity: selectedPhieu?.trang_thai === 'Đã xuất hàng khỏi kho' ? '0.6' : '1' }">
-                        ✅ Kiểm tra hoàn tất
+                         Hoàn tất
                         </button>
                         
-                        <button (click)="dongPopup()">❌ Đóng</button>
+                        <button (click)="dongPopup()" style="background-color: red"> Đóng</button>
                         </div>
                     </div>
                     </div>

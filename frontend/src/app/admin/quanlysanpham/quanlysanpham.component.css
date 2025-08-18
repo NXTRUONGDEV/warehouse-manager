@@ -612,3 +612,131 @@ h2 {
   border: none;
   border-radius: 4px;
 }
+
+.btn-luu {
+  background-color: #2a8df4;         /* Xanh chủ đạo */
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-in-out;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-luu:hover {
+  background-color: #1976d2;         /* Màu hover đậm hơn */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
+
+.btn-luu:active {
+  transform: scale(0.98);
+  background-color: #145ea8;
+}
+
+.location-grid-map {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.location-row {
+  display: flex;
+  gap: 4px;
+}
+
+.location-box {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ccc;
+  text-align: center;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.location-empty {
+  background-color: #f5f5f5;
+}
+
+.location-used {
+  background-color: #ffe599;
+}
+
+.location-empty {
+  background-color: #f5f5f5;
+}
+
+.location-used {
+  background-color: #ffe599; /* vàng */
+}
+
+/* ô đã chọn luôn cho phép click */
+.location-selected {
+  background-color: #66ccff; /* xanh nước */
+  pointer-events: auto;      /* quan trọng */
+}
+
+/* ô full thật sự */
+.location-full:not(.location-selected) {
+  background-color: #4CAF50; /* xanh lá */
+  pointer-events: none;
+}
+
+.btn-blue {
+  background-color: #66ccff;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-red {
+  background-color: #ff6666;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-blue:hover {
+  background-color: #33b5ff;
+}
+
+.btn-red:hover {
+  background-color: #ff3333;
+}
+
+/* Nút Hủy chung */
+.btn-huy {
+  margin-top: 10px;
+  background-color: #ff4d4f; /* đỏ nổi bật */
+  width: 100%;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px; /* bo góc */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-huy:hover {
+  background-color: #ff7875; /* nhạt hơn khi hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.btn-huy:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+

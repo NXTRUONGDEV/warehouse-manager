@@ -47,6 +47,8 @@ export class AccountManagerComponent implements OnInit {
     role: 'user'
   };
 
+  selectedStatus: string = '';
+
   ngOnInit(): void {
     this.loadUsers();
     this.loadUserInfo();
@@ -77,18 +79,21 @@ export class AccountManagerComponent implements OnInit {
     });
   }
 
-  //bộ lọc
+  // Bộ lọc
   filterUsers() {
-  const keyword = this.searchKeyword.trim().toLowerCase();
-  const role = this.selectedRole;
+    const keyword = this.searchKeyword.trim().toLowerCase();
+    const role = this.selectedRole;
+    const status = this.selectedStatus; // lấy trạng thái
 
-  this.filteredUsers = this.users.filter(user => {
-    const nameMatch = user.name.toLowerCase().includes(keyword);
-    const roleMatch = !role || user.role === role;
-    return nameMatch && roleMatch;
-  });
-}
+    this.filteredUsers = this.users.filter(user => {
+      const nameMatch = user.name.toLowerCase().includes(keyword);
+      const roleMatch = !role || user.role === role;
+      const statusMatch = !status || user.status === status; // so sánh trạng thái
 
+      return nameMatch && roleMatch && statusMatch;
+    });
+  }
+  
   toggleUserInfoForm() {
     this.showUserInfoForm = !this.showUserInfoForm;
   }
@@ -116,71 +121,80 @@ export class AccountManagerComponent implements OnInit {
   }
 
   themTaiKhoan() {
-  const name = prompt('Nhập tên tài khoản:');
-  const email = prompt('Nhập email:');
-  const password = prompt('Nhập mật khẩu:');
-  const role = prompt('Nhập vai trò (user / staff / admin):');
+    const { name, email, password, role } = this.newUser;
 
-  if (!name || !email || !password || !role) {
-    alert('⚠️ Vui lòng nhập đầy đủ thông tin.');
-    return;
-  }
-
-  const namePattern = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
-  if (!namePattern.test(name.trim())) {
-    alert('⚠️ Họ tên phải là chữ cái, không chứa số/ký tự đặc biệt và ít nhất 2 ký tự!');
-    return;
-  }
-
-  this.http.post('http://localhost:3000/api/users', { name, email, password, role }).subscribe({
-    next: (res: any) => {
-      alert('✅ Đã thêm tài khoản!');
-      this.users.push(res.user);
-    },
-    error: () => alert('❌ Lỗi khi thêm tài khoản.')
-  });
-}
-
-
-xemThongTin(user: any) {
-  // Gọi API để lấy thông tin chi tiết từ bảng user_info (liên kết với users qua user_id)
-  this.http.get(`http://localhost:3000/api/user-info/${user.id}`).subscribe({
-    next: (userInfo: any) => {
-      // Gộp thông tin từ bảng `users` và bảng `user_info`
-      this.selectedUser = {
-        ...user,
-        full_name: userInfo?.full_name,
-        date_of_birth: userInfo?.date_of_birth ? userInfo.date_of_birth.split('T')[0] : '',
-        gender: userInfo?.gender,
-        address: userInfo?.address,
-        phone: userInfo?.phone,
-        image_url: userInfo?.image_url
-      };
-    },
-    error: (err) => {
-      console.error('❌ Lỗi khi lấy thông tin chi tiết:', err);
-      // Nếu không có user_info, vẫn hiển thị thông tin cơ bản
-      this.selectedUser = user;
+    if (!name || !email || !password || !role) {
+      alert('⚠️ Vui lòng nhập đầy đủ thông tin.');
+      return;
     }
-  });
-}
 
+    const namePattern = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
+    if (!namePattern.test(name.trim())) {
+      alert('⚠️ Họ tên phải là chữ cái, không chứa số/ký tự đặc biệt và ít nhất 2 ký tự!');
+      return;
+    }
 
-  xoaTaiKhoan(userId: number) {
+    this.http.post('http://localhost:3000/api/users', { name, email, password, role })
+      .subscribe({
+        next: (res: any) => {
+          alert('✅ Đã thêm tài khoản!');
+          this.users.push(res.user); // Cập nhật danh sách
+          this.showAccountForm = false; // Đóng form
+          this.newUser = { name: '', email: '', password: '', role: 'user' }; // Reset form
+        },
+        error: (err) => {
+        console.error('❌ Lỗi khi thêm tài khoản:', err);
+        alert(err.error?.message || '❌ Lỗi khi thêm tài khoản.');
+      }
+    });
+    window.location.reload();
+  }
+
+  xemThongTin(user: any) {
+    // Gọi API để lấy thông tin chi tiết từ bảng user_info (liên kết với users qua user_id)
+    this.http.get(`http://localhost:3000/api/user-info/${user.id}`).subscribe({
+      next: (userInfo: any) => {
+        // Gộp thông tin từ bảng `users` và bảng `user_info`
+        this.selectedUser = {
+          ...user,
+          full_name: userInfo?.full_name,
+          date_of_birth: userInfo?.date_of_birth ? userInfo.date_of_birth.split('T')[0] : '',
+          gender: userInfo?.gender,
+          address: userInfo?.address,
+          phone: userInfo?.phone,
+          image_url: userInfo?.image_url
+        };
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi lấy thông tin chi tiết:', err);
+        // Nếu không có user_info, vẫn hiển thị thông tin cơ bản
+        this.selectedUser = user;
+      }
+    });
+  }
+
+  xoaTaiKhoan(userId: number) { 
     const currentUserId = Number(sessionStorage.getItem('id'));
+
+    // ✅ Kiểm tra không tự xóa mình ở frontend
     if (userId === currentUserId) {
       alert('⚠️ Bạn không thể xoá chính tài khoản đang đăng nhập!');
       return;
     }
 
     if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-      this.http.delete(`http://localhost:3000/api/users/${userId}`).subscribe({
+      this.http.delete(
+        `http://localhost:3000/api/users/${userId}?currentUserId=${currentUserId}`
+      ).subscribe({
         next: () => {
           this.users = this.users.filter(u => u.id !== userId);
           alert('✅ Đã xóa tài khoản!');
-          window.location.reload();
+          window.location.reload(); // ✅ Chỉ reload sau khi alert hiện xong
         },
-        error: () => alert('❌ Lỗi khi xóa tài khoản.')
+        error: (err) => {
+          console.error('❌ Lỗi xóa tài khoản:', err);
+          alert(err.error?.message || '❌ Lỗi khi xóa tài khoản.');
+        }
       });
     }
   }
@@ -189,58 +203,70 @@ xemThongTin(user: any) {
     this.selectedFile = event.target.files[0];
   }
 
-submitInfo() {
-  const birthDate = new Date(this.formData.date_of_birth);
-  const today = new Date();
+  submitInfo() {
+      const birthDate = new Date(this.formData.date_of_birth);
+      const today = new Date();
 
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  const dayDiff = today.getDate() - birthDate.getDate();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
 
-  const isUnder20 = age < 20 || (age === 20 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)));
-  if (isUnder20) {
-    alert('⚠️ Người dùng phải đủ 20 tuổi trở lên!');
-    return;
+      const isUnder20 = age < 20 || (age === 20 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)));
+      if (isUnder20) {
+        alert('⚠️ Người dùng phải đủ 20 tuổi trở lên!');
+        return;
+      }
+
+      const namePattern = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
+      if (!namePattern.test(this.formData.full_name.trim())) {
+        alert('⚠️ Họ và tên phải là chữ cái, không chứa số hoặc ký tự đặc biệt, và ít nhất 2 ký tự!');
+        return;
+      }
+
+      const phonePattern = /^\d{1,11}$/;
+      if (!phonePattern.test(this.formData.phone)) {
+        alert('⚠️ Số điện thoại không hợp lệ (tối đa 11 số và chỉ chứa số).');
+        return;
+      }
+
+      const form = new FormData();
+      form.append('user_id', this.userId!);
+      form.append('full_name', this.formData.full_name);
+      form.append('date_of_birth', this.formData.date_of_birth);
+      form.append('gender', this.formData.gender);
+      form.append('address', this.formData.address);
+      form.append('phone', this.formData.phone);
+
+      if (this.selectedFile) {
+        form.append('avatar', this.selectedFile);
+      }
+
+      this.http.post('http://localhost:3000/api/user-info', form).subscribe(() => {
+        alert('✅ Cập nhật thông tin thành công!');
+        window.location.reload();
+        this.showUserInfoForm = false;
+        this.selectedFile = null;
+
+        // 🔁 Cập nhật lại sessionStorage sau khi cập nhật thông tin thành công
+        this.http.get(`http://localhost:3000/api/user-info/${this.userId}`).subscribe((updatedInfo: any) => {
+          sessionStorage.setItem('userInfo', JSON.stringify(updatedInfo)); // ✅ Lưu lại
+          this.userInfo = updatedInfo;
+          this.ngOnInit();
+        });
+      });
   }
 
-  const namePattern = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
-  if (!namePattern.test(this.formData.full_name.trim())) {
-    alert('⚠️ Họ và tên phải là chữ cái, không chứa số hoặc ký tự đặc biệt, và ít nhất 2 ký tự!');
-    return;
-  }
-
-  const phonePattern = /^\d{1,11}$/;
-  if (!phonePattern.test(this.formData.phone)) {
-    alert('⚠️ Số điện thoại không hợp lệ (tối đa 11 số và chỉ chứa số).');
-    return;
-  }
-
-  const form = new FormData();
-  form.append('user_id', this.userId!);
-  form.append('full_name', this.formData.full_name);
-  form.append('date_of_birth', this.formData.date_of_birth);
-  form.append('gender', this.formData.gender);
-  form.append('address', this.formData.address);
-  form.append('phone', this.formData.phone);
-
-  if (this.selectedFile) {
-    form.append('avatar', this.selectedFile);
-  }
-
-  this.http.post('http://localhost:3000/api/user-info', form).subscribe(() => {
-    alert('✅ Cập nhật thông tin thành công!');
-    window.location.reload();
-    this.showUserInfoForm = false;
-    this.selectedFile = null;
-
-    // 🔁 Cập nhật lại sessionStorage sau khi cập nhật thông tin thành công
-    this.http.get(`http://localhost:3000/api/user-info/${this.userId}`).subscribe((updatedInfo: any) => {
-      sessionStorage.setItem('userInfo', JSON.stringify(updatedInfo)); // ✅ Lưu lại
-      this.userInfo = updatedInfo;
-      this.ngOnInit();
+  updateStatus(user: any) {
+  this.http.put(`http://localhost:3000/api/users/${user.id}/status`, { status: user.status })
+    .subscribe({
+      next: () => {
+        alert('✅ Cập nhật trạng thái thành công!');
+      },
+      error: (err) => {
+        console.error('❌ Lỗi cập nhật trạng thái:', err);
+        alert('❌ Cập nhật trạng thái thất bại!');
+      }
     });
-  });
-}
-
+  }
 
 }

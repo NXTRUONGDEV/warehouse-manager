@@ -376,14 +376,27 @@ textarea {
   }
 }
 
-/*đổi màu*/
 .status-duyet {
-  background-color: #ffe0b2; /* cam nhạt */
-  color: #b75c00;
+  background-color: #d0e8ff;
+  color: #1565c0;           /* xanh biển đậm chữ */
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 500;
   display: inline-block;
+}
+
+.btn-confirm {
+  background-color: #4a90e2; /* xanh biển nhạt */
+  color: #ffffff;            /* xanh biển đậm chữ */
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background-color: #90caf9; /* xanh biển đậm hơn khi hover */
 }
 
 .status-dahoanthanh {
@@ -393,4 +406,66 @@ textarea {
   border-radius: 4px;
   font-weight: 500;
   display: inline-block;
+}
+
+.status-huy {
+  background-color: #f8d7da; /* nền đỏ nhạt */
+  color: #842029;            /* chữ đỏ đậm */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  border: 1px solid #f5c2c7;
+}
+
+.btn-red {
+  background-color: #e74c3c;  /* đỏ */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-red:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.btn-green {
+  background-color: #4caf50; /* xanh lá */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-green:hover:not(:disabled) {
+  background-color: #388e3c;
+}
+
+.btn-gray {
+  background-color: #e9c913; /* xám */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-gray:hover:not(:disabled) {
+  background-color: #e9c913;
+}
+
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-space {
+  margin-right: 10px;
 }

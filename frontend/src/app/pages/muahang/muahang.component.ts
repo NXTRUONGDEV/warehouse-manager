@@ -69,6 +69,7 @@ export class MuahangComponent {
       unit: '',
       weight: 0,
       weight_per_unit: 0,
+      original_quantity: 0, // 🆕 Số lượng gốc
       manufacture_date: '',
       expiry_date: '',
       quantity: 0,
@@ -124,6 +125,11 @@ export class MuahangComponent {
   onQuantityChange(index: number): void {
     const item = this.formData.products[index];
 
+    if (item.quantity > item.original_quantity) {
+      alert(`⚠️ Số lượng mua không được lớn hơn tồn kho (${item.original_quantity}).`);
+      item.quantity = item.original_quantity;
+    }
+
     if (item.quantity && item.weight_per_unit) {
       item.weight = item.quantity * item.weight_per_unit;
     }
@@ -131,6 +137,7 @@ export class MuahangComponent {
     this.phieuMuaService.setProducts(this.formData.products);
     this.saveForm();
   }
+
 
   onFormChange(): void {
     this.saveForm();
@@ -153,6 +160,7 @@ export class MuahangComponent {
   }
 
   submitForm() {
+    // --- Kiểm tra thông tin chung ---
     if (!this.userInfo.full_name || !this.userInfo.phone || !this.userInfo.date_of_birth) {
       alert('❌ Vui lòng cập nhật thông tin cá nhân trước khi đăng ký mua hàng.');
       return;
@@ -168,59 +176,39 @@ export class MuahangComponent {
       return;
     }
 
+    // --- Kiểm tra sản phẩm ---
     for (let i = 0; i < this.formData.products.length; i++) {
       const p = this.formData.products[i];
 
-      if (!p.product_name || !p.product_type || !p.product_code || !p.unit || !p.weight ||
-          !p.manufacture_date || !p.expiry_date || !p.quantity || !p.unit_price) {
+      if (!p.product_name || !p.product_code || !p.unit || !p.quantity || !p.unit_price) {
         alert(`❌ Vui lòng nhập đầy đủ thông tin cho sản phẩm số ${i + 1}.`);
         return;
       }
 
-      if (p.weight <= 0 || p.quantity <= 0 || p.unit_price <= 0) {
-        alert(`❌ Trường số phải > 0 (sản phẩm số ${i + 1}).`);
+      if (p.quantity <= 0 || p.unit_price <= 0) {
+        alert(`❌ Số lượng và đơn giá phải > 0 (sản phẩm số ${i + 1}).`);
         return;
       }
 
-      if (!p.weight_per_unit || p.weight_per_unit <= 0) {
-        alert(`❌ Trọng lượng 1 đơn vị phải > 0 (sản phẩm số ${i + 1}).`);
+      if (p.quantity > p.stock_quantity) {
+        alert(`❌ Số lượng xuất (${p.quantity}) vượt quá tồn kho (${p.stock_quantity}) của sản phẩm ${i + 1}.`);
         return;
       }
-
-      const nsx = new Date(p.manufacture_date);
-      const hsd = new Date(p.expiry_date);
-      const now = new Date();
-
-      const phoneRegex = /^[0-9]{9,12}$/;
-      if (!phoneRegex.test(this.userInfo.phone)) {
-        alert('❌ Số điện thoại không hợp lệ.');
-        return;
-      }
-
-      if (nsx >= hsd) {
-        alert(`❌ NSX phải trước HSD (sản phẩm số ${i + 1}).`);
-        return;
-      }
-
-      const daysDiff = Math.floor((hsd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      if (hsd <= now || daysDiff < 30) {
-        alert(`❌ HSD phải sau ngày hiện tại và còn ít nhất 30 ngày (sản phẩm ${i + 1}).`);
-        return;
-      }
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // reset giờ
-
-      const appointmentDate = new Date(this.formData.appointment_date);
-      appointmentDate.setHours(0, 0, 0, 0);
-
-      if (appointmentDate < today) {
-        alert("❌ Ngày xuất kho không được nhỏ hơn ngày hôm nay.");
-        return;
-      } 
     }
 
-    // Chuẩn bị FormData
+    // --- Kiểm tra ngày xuất ---
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const appointmentDate = new Date(this.formData.appointment_date);
+    appointmentDate.setHours(0, 0, 0, 0);
+
+    if (appointmentDate < today) {
+      alert("❌ Ngày xuất kho không được nhỏ hơn ngày hôm nay.");
+      return;
+    }
+
+    // --- Chuẩn bị FormData ---
     const form = new FormData();
 
     form.append('created_date', this.formData.created_date);
@@ -239,7 +227,6 @@ export class MuahangComponent {
     form.append('note', this.formData.note || '');
     form.append('total_amount', this.calculateTotal().toString());
     form.append('total_weight', this.calculateTotalWeight().toString());
-    
 
     if (this.formData.logo) {
       form.append('logo', this.formData.logo);
@@ -253,12 +240,13 @@ export class MuahangComponent {
 
     form.append('products', JSON.stringify(this.formData.products));
 
+    // --- Gửi API ---
     this.http.post<any>('http://localhost:3000/api/phieu-xuat', form).subscribe({
       next: (res) => {
         this.generatedReceiptCode = res.receipt_code;
-        alert(`✅ Gửi phiếu thành công!\n📄 Mã phiếu: ${res.receipt_code}`);
+        alert(`✅ Gửi phiếu xuất thành công!\n📄 Mã phiếu: ${res.receipt_code}`);
 
-        // Xoá dữ liệu sau khi gửi
+        // Reset dữ liệu
         this.phieuMuaService.clearProducts();
         this.phieuMuaService.clearFormData();
 
@@ -271,6 +259,7 @@ export class MuahangComponent {
       }
     });
   }
+
 
   goToSanPhamCuakho() {
     this.router.navigate(['/sanphamcuakho']);

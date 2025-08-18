@@ -54,6 +54,8 @@ export class QuanlyhangtonComponent implements OnInit {
   showEmailDropdown = false;
   filteredEmailSuggestions: string[] = [];
 
+  boLocChon: '' | 'chon' | 'bo' = '';
+
   get danhSachKhuVuc() {
     const tenKhuVucSet = new Set(this.sanPhamGoc.map(sp => sp.ten_khu_vuc));
     return Array.from(tenKhuVucSet).map(ten => ({ ten_khu_vuc: ten }));
@@ -65,6 +67,10 @@ export class QuanlyhangtonComponent implements OnInit {
       .filter(email => email); // loại bỏ null/undefined
 
     return Array.from(new Set(emails)); // loại trùng
+  }
+
+  get danhSachSanPhamLocTheoChon(): any[] {
+    return this.danhSachSanPham.filter(sp => this.locTheoTrangThaiChon(sp));
   }
 
 
@@ -164,14 +170,13 @@ export class QuanlyhangtonComponent implements OnInit {
           const isNew = isSelected && !daGanCodes.includes(sp.product_code);
 
           const tongSoLuongTru = sp.total_deducted ?? 0;
-          const soLuongBanDau = sp.quantity ?? 0; // KHÔNG cộng thêm đã trừ
+          const soLuongBanDau = sp.quantity ?? 0;
           const soDonXuat = sp.total_receipts ?? 0;
 
           const isHot = soLuongBanDau > 0 && (
             tongSoLuongTru >= 0.6 * soLuongBanDau || soDonXuat >= 5
           );
 
-          // ✅ Tính ngày hết hạn để đánh dấu Sale nếu còn ≤ 35 ngày
           let isSale = false;
           if (sp.expiry_date) {
             const today = new Date();
@@ -181,17 +186,17 @@ export class QuanlyhangtonComponent implements OnInit {
             isSale = daysLeft <= 30 && daysLeft >= 0;
           }
 
-          // Debug log
           console.log(
             `🔥 ${sp.product_code} | SL trừ: ${tongSoLuongTru} | SL đầu: ${soLuongBanDau} | Đơn xuất: ${soDonXuat} | isHot: ${isHot} | ⚡ isSale: ${isSale}`
           );
 
           return {
             ...sp,
+            ghi_chu: sp.ghiChuKiemKe ?? null, // ✅ Dòng đã thêm: Ánh xạ dữ liệu từ backend
             selected: isSelected,
             isNew,
             isHot,
-            isSale, // ⚡ Thêm vào đây
+            isSale,
             actual_quantity: sp.soLuongThucTe ?? null,
             kiem_ke_email: sp.emailNhanVien ?? null
           };
@@ -204,6 +209,7 @@ export class QuanlyhangtonComponent implements OnInit {
         alert('Không thể tải dữ liệu sản phẩm.');
       });
   }
+
 
   /** --- Popup chi tiết sản phẩm --- */
   moPopupChiTiet(sp: any) {
@@ -551,14 +557,17 @@ export class QuanlyhangtonComponent implements OnInit {
   }
 
   getClassTinhTrang(sp: any): string {
-    if (sp.actual_quantity == null || sp.actual_quantity === '') return 'text-muted';
+    if (sp.isNew || sp.actual_quantity == null || sp.actual_quantity === '') return ''; // ⚠️ Không tô màu chữ
+
     const actual = +sp.actual_quantity || 0;
     const system = +sp.quantity || 0;
     const diff = actual - system;
-    if (diff > 0) return 'text-warning';
-    if (diff < 0) return 'text-danger';
-    return 'text-success';
+
+    if (diff > 0) return 'text-warning fw-bold';
+    if (diff < 0) return 'text-danger fw-bold';
+    return 'text-success fw-bold';
   }
+
 
   tinhThatThoat(sp: any): number | null {
     if (sp.actual_quantity == null || sp.actual_quantity === '') return null;
@@ -620,8 +629,6 @@ export class QuanlyhangtonComponent implements OnInit {
     }
   }
 
-
-
   demLaiSanPham(sp: any) {
     const confirmReset = confirm(`Bạn có chắc chắn muốn đếm lại sản phẩm "${sp.product_name}"?\nViệc này sẽ xóa số lượng thực tế và người kiểm trên cả Admin và Nhân viên.`);
     if (!confirmReset) return;
@@ -671,9 +678,17 @@ export class QuanlyhangtonComponent implements OnInit {
         this.currentInventoryBatchId = null;
         localStorage.removeItem('dot_id_moi_nhat');
         localStorage.removeItem('sp_kiem_ke');
-        this.danhSachSanPham = [];
+        localStorage.removeItem('sp_kiem_ke_selected_tam'); // thêm dòng này
 
-        location.reload(); // hoặc gọi this.loadProducts();
+        // ✅ Xóa hết sản phẩm đã chọn
+        this.danhSachSanPham = this.danhSachSanPham.map(sp => ({
+          ...sp,
+          selected: false,
+          isNew: false
+        }));
+
+        this.showDanhSachKiemKePopup = false;
+        // this.loadProducts(); // nếu bạn cần tải lại sản phẩm
       },
       error: err => {
         console.error('❌ Lỗi khi kết thúc đợt kiểm kê:', err);
@@ -681,7 +696,6 @@ export class QuanlyhangtonComponent implements OnInit {
       }
     });
   }
-
 
   xoaTatCaKhoiDanhSachKiemKe() {
     const sanPhamDaChon = this.getDanhSachSanPhamDuocChon();
@@ -736,9 +750,6 @@ export class QuanlyhangtonComponent implements OnInit {
       this.loadProducts(); // Làm mới dữ liệu
     }
   }
-
-
-
 
   huyDotKiemKe() {
     if (!this.currentInventoryBatchId) return;
@@ -818,5 +829,11 @@ export class QuanlyhangtonComponent implements OnInit {
     return this.getDanhSachSanPhamDuocChon().some(sp => sp.isNew);
   }
 
-  
+  locTheoTrangThaiChon(sp: any): boolean {
+    if (this.boLocChon === 'chon') return sp.selected === true;
+    if (this.boLocChon === 'bo') return !sp.selected;
+    return true; // Mặc định: hiển thị tất cả
+  }
+
+
 }

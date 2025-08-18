@@ -97,19 +97,17 @@ export class DuyetphieuxuatComponent implements OnInit {
   }
 
   hoanTatKiemTra() {
-    // B1: Kiểm tra thiếu thông tin
     if (!this.selectedPhieu || !this.selectedPhieu.products || this.selectedPhieu.products.length === 0) {
       alert('❌ Không có sản phẩm nào để kiểm tra.');
       return;
     }
 
-    // B2: Gọi API kiểm tra từng sản phẩm
     const checkPromises = this.selectedPhieu.products.map((sp: any) => {
       return this.http.get<any>(`http://localhost:3000/api/products-detail/check-available/${sp.product_code}/${sp.quantity}`).toPromise();
     });
 
     Promise.all(checkPromises).then(results => {
-      const khongDuHang = results.filter(r => !r.enough); // Trả về những sản phẩm không đủ
+      const khongDuHang = results.filter(r => !r.enough);
 
       if (khongDuHang.length > 0) {
         const danhSach = khongDuHang.map(sp => sp.product_code).join(', ');
@@ -117,7 +115,7 @@ export class DuyetphieuxuatComponent implements OnInit {
         return;
       }
 
-      // B3: Duyệt phiếu nếu đủ
+      // Nếu đủ thì cập nhật trạng thái
       const newStatus = 'Đã duyệt';
 
       this.http.put(`http://localhost:3000/api/phieu-xuat/${this.selectedPhieu.id}/admin-cap-nhat`, {
@@ -127,16 +125,22 @@ export class DuyetphieuxuatComponent implements OnInit {
         admin_account_name: this.adminName
       }).subscribe(() => {
         alert('✅ Kiểm tra hoàn tất! Trạng thái đã cập nhật sang "Đã duyệt". Bạn có thể xuất hàng.');
+
+        // ✅ Cập nhật thông tin hiển thị
         this.selectedPhieu.trang_thai = newStatus;
         this.selectedPhieu.note_admin = this.phanHoiHeThong;
         this.selectedPhieu.admin_account_email = this.adminEmail;
         this.selectedPhieu.admin_account_name = this.adminName;
+
+        // ✅ Tự động đóng popup
+        this.popupNhapKhoMo = false;
       });
     }).catch(err => {
       console.error('❌ Lỗi kiểm tra số lượng sản phẩm:', err);
       alert('❌ Lỗi khi kiểm tra số lượng sản phẩm.');
     });
   }
+
 
 
   capNhatThanhTien(sp: any) {
@@ -266,5 +270,24 @@ export class DuyetphieuxuatComponent implements OnInit {
       });
     }
   }
+
+  huyPhieu(p: any) {
+    if (p.trang_thai === 'Đã gửi phiếu' || p.trang_thai === 'Đã duyệt') {
+      const confirmed = confirm('Bạn có chắc chắn muốn hủy phiếu này không?');
+      if (!confirmed) return; // nếu không đồng ý thì dừng
+
+      this.http.put(`http://localhost:3000/api/phieu-xuat-kho/${p.id}/huy`, { trang_thai: 'Đã hủy' })
+        .subscribe({
+          next: () => {
+            p.trang_thai = 'Đã hủy';
+          },
+          error: () => {
+            alert('Hủy phiếu thất bại, vui lòng thử lại');
+          }
+        });
+    }
+  }
+
+
 
 }

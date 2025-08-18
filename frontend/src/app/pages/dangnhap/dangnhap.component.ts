@@ -31,27 +31,32 @@ export class DangnhapComponent {
     this.activeTab = tab;
   }
 
-login() {
-  this.http.post<{ token: string; role: string; name: string; email: string; id: number }>(
-    'http://localhost:3000/api/login',
-    this.loginData
-  ).subscribe({
-    next: (res) => {
-      sessionStorage.setItem('token', res.token);
-      sessionStorage.setItem('role', res.role);
-      sessionStorage.setItem('name', res.name);
-      sessionStorage.setItem('email', res.email);
-      sessionStorage.setItem('id', res.id.toString());
+  login() {
+    this.http.post<{ token: string; role: string; name: string; email: string; id: number }>(
+      'http://localhost:3000/api/login',
+      this.loginData
+    ).subscribe({
+      next: (res) => {
+        sessionStorage.setItem('token', res.token);
+        sessionStorage.setItem('role', res.role);
+        sessionStorage.setItem('name', res.name);
+        sessionStorage.setItem('email', res.email);
+        sessionStorage.setItem('id', res.id.toString());
 
-     if (res.role === 'admin') {
-        this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
-      } else {
-        this.router.navigate(['/home']).then(() => window.location.reload());
+        if (res.role === 'admin') {
+          this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
+        } else {
+          this.router.navigate(['/home']).then(() => window.location.reload());
+        }
+      },
+      error: (err) => {
+        // 🛠 Đọc message từ backend
+        const message = err.error?.message || 'Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.';
+        alert(message);
       }
-    },
-    error: () => alert('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.')
-  });
-}
+    });
+  }
+
 
 
  register() {
