@@ -1,4 +1,3 @@
-// profile.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -16,8 +15,12 @@ export class ProfileGuard implements CanActivate {
     const role = sessionStorage.getItem('role');
 
     if (!userId) {
-      this.dieuHuongTheoVaiTro(role);
+      this.router.navigate(['/login']);
       return of(false);
+    }
+
+    if (role === 'admin') {
+      return of(true);
     }
 
     return this.http.get<any>(`http://localhost:3000/api/user-info/${userId}`).pipe(
@@ -30,23 +33,23 @@ export class ProfileGuard implements CanActivate {
           userInfo.address?.trim() &&
           userInfo.phone?.trim()
         ) {
-          // ✅ Lưu vào sessionStorage nếu cần
           sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
           return true;
         } else {
-          alert('⚠️ Vui lòng cập nhật đầy đủ thông tin cá nhân để tiếp tục.');
-          this.dieuHuongTheoVaiTro(role);
+          alert('⚠️ Vui lòng cập nhật đầy đủ thông tin cá nhân.');
+          this.router.navigate(['/staff/thongtin']);
           return false;
         }
       }),
       catchError(err => {
-        console.error('Lỗi khi kiểm tra thông tin:', err);
-        alert('⚠️ Lỗi khi kiểm tra thông tin cá nhân.');
-        this.dieuHuongTheoVaiTro(role);
+        console.error(err);
+        alert('⚠️ Lỗi kiểm tra thông tin cá nhân.');
+        this.router.navigate(['/staff/thongtin']);
         return of(false);
       })
     );
   }
+
 
   private dieuHuongTheoVaiTro(role: string | null) {
     if (role === 'admin') {

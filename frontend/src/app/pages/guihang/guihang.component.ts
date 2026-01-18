@@ -37,6 +37,11 @@ export class GuihangComponent {
 
     if (savedForm) {
       this.formData = { ...this.formData, ...savedForm };
+
+      // ✅ Nếu là logo URL cũ -> gán lại vào formData.logo để submit gửi đúng
+      if (savedForm.logo_url && !this.formData.logo) {
+        this.formData.logo = savedForm.logo_url;
+      }
     } else {
       this.formData.created_date = this.today;
     }
@@ -44,7 +49,7 @@ export class GuihangComponent {
     if (savedProducts && savedProducts.length) {
       this.formData.products = savedProducts;
     } else {
-      this.addProduct(); // nếu chưa có thì thêm mặc định
+      this.addProduct();
     }
 
     this.http.get<any>(`http://localhost:3000/api/user-info/${this.userId}`).subscribe({
@@ -172,11 +177,22 @@ export class GuihangComponent {
     form.append('representative_phone', this.formData.representative_phone);
 
     // Logo và sản phẩm như trước
+
+    // ✅ Nếu chưa có logo nhưng sản phẩm có logo_url -> gán logo mặc định
+    if (!this.formData.logo && this.formData.products.length > 0) {
+      const firstLogo = this.formData.products[0].logo_url || this.formData.products[0].image_url || '';
+      if (firstLogo) {
+        this.formData.logo = firstLogo;
+      }
+    }
+
     if (this.formData.logo instanceof File) {
       form.append('logo', this.formData.logo);
-    } else if (typeof this.formData.logo === 'string') {
+    } else if (typeof this.formData.logo === 'string' && this.formData.logo !== '') {
       form.append('logo_url', this.formData.logo);
     }
+
+
 
     this.formData.products.forEach((p: any, index: number) => {
       if (p.imageFile) {

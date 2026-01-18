@@ -118,6 +118,46 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// tạo admin mặc định nếu chưa có
+const createAdminAccount = async () => {
+  const adminEmail = 'admin@gmail.com';
+
+  db.query(
+    'SELECT * FROM users WHERE email = ?',
+    [adminEmail],
+    async (err, results) => {
+      if (err) {
+        console.error('❌ Lỗi kiểm tra admin:', err);
+        return;
+      }
+
+      if (results.length > 0) {
+        console.log('✅ Tài khoản admin đã tồn tại');
+        return;
+      }
+
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+
+      db.query(
+        'INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)',
+        ['Administrator', adminEmail, hashedPassword, 'admin', 'active'],
+        (err) => {
+          if (err) {
+            console.error('❌ Lỗi tạo admin:', err);
+          } else {
+            console.log('🎉 Đã tạo tài khoản admin mặc định');
+            console.log('👉 Email: admin@gmail.com');
+            console.log('👉 Password: admin123');
+          }
+        }
+      );
+    }
+  );
+};
+
+// Gọi hàm khi server start
+createAdminAccount();
+
 
 
 // ========================== USERS ==========================
@@ -1382,24 +1422,56 @@ app.put('/api/phieu-xuat/:id/admin-cap-nhat', (req, res) => {
   });
 });
 
-//kiểm tra đủ số lượng ko
+// ✅ Nâng cấp — Kiểm tra số lượng + hạn sử dụng
 app.get('/api/products-detail/check-available/:code/:required', async (req, res) => {
   const { code, required } = req.params;
+  const requiredQty = parseInt(required);
 
   try {
-    const [rows] = await db.promise().query(
+    // Tính tổng tất cả số lượng tồn (bao gồm hết hạn)
+    const [allLots] = await db.promise().query(
       'SELECT SUM(quantity) AS total_quantity FROM products_detail WHERE product_code = ?',
       [code]
     );
+    const totalAll = allLots[0].total_quantity || 0;
 
-    const quantityInStock = rows[0].total_quantity || 0;
-    const isEnough = quantityInStock >= parseInt(required);
+    // Tính tổng chỉ các lô còn hạn sử dụng
+    const [validLots] = await db.promise().query(
+      `SELECT SUM(quantity) AS total_quantity 
+       FROM products_detail 
+       WHERE product_code = ? 
+         AND (expiry_date IS NULL OR expiry_date >= CURDATE())`,
+      [code]
+    );
+    const totalValid = validLots[0].total_quantity || 0;
 
+    // ✅ Nếu có hàng nhưng tất cả đều hết hạn
+    if (totalAll > 0 && totalValid === 0) {
+      return res.json({
+        product_code: code,
+        expired_only: true,
+        message: `⚠ Sản phẩm ${code} có hàng nhưng toàn bộ đã hết hạn.`
+      });
+    }
+
+    // ✅ Nếu còn hạn nhưng không đủ để xuất
+    if (totalValid < requiredQty) {
+      return res.json({
+        product_code: code,
+        not_enough_valid: true,
+        valid_quantity: totalValid,
+        required: requiredQty,
+        message: `⚠ Chỉ còn ${totalValid} sản phẩm ${code} còn hạn, không đủ để xuất ${requiredQty}.`
+      });
+    }
+
+    // ✅ Còn hạn và đủ số lượng
     res.json({
       product_code: code,
-      enough: isEnough,
-      available: quantityInStock,
-      required: parseInt(required)
+      enough: true,
+      valid_quantity: totalValid,
+      required: requiredQty,
+      message: `✅ Đủ số lượng hợp lệ để xuất.`
     });
 
   } catch (err) {
@@ -1407,6 +1479,7 @@ app.get('/api/products-detail/check-available/:code/:required', async (req, res)
     res.status(500).json({ error: 'Lỗi máy chủ' });
   }
 });
+
 
 
 //trừ số lượng trong kho 

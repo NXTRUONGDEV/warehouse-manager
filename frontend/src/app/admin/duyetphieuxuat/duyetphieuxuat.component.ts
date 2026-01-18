@@ -107,17 +107,46 @@ export class DuyetphieuxuatComponent implements OnInit {
     });
 
     Promise.all(checkPromises).then(results => {
-      const khongDuHang = results.filter(r => !r.enough);
 
-      if (khongDuHang.length > 0) {
-        const danhSach = khongDuHang.map(sp => sp.product_code).join(', ');
-        alert(`❌ Không thể duyệt phiếu vì các sản phẩm sau không đủ số lượng trong kho: ${danhSach}`);
+      let loiHetHan: string[] = [];
+      let loiKhongDuHanHopLe: string[] = [];
+      let loiKhongDuTong: string[] = [];
+
+      results.forEach((r) => {
+        // ✅ BACKEND TRẢ VỀ CÁC TRẠNG THÁI:
+        // expired_only = hoàn toàn hết hạn
+        // not_enough_valid = còn hàng nhưng số lượng hợp lệ > thời hạn không đủ
+        // not_enough_total = tổng tồn kho < yêu cầu
+
+        if (r.expired_only) {
+          loiHetHan.push(r.product_code);
+        } 
+        else if (r.not_enough_valid) {
+          loiKhongDuHanHopLe.push(`${r.product_code} (Hợp lệ còn: ${r.valid_quantity}/${r.required})`);
+        }
+        else if (r.not_enough_total) {
+          loiKhongDuTong.push(`${r.product_code} (Tồn kho thực tế chỉ còn: ${r.total_available}, Yêu cầu: ${r.required})`);
+        }
+      });
+
+      // ⚠ Ưu tiên báo lỗi theo mức độ nghiêm trọng
+      if (loiHetHan.length > 0) {
+        alert(`❌ Không thể duyệt phiếu vì các sản phẩm sau đã hết hạn hoàn toàn: ${loiHetHan.join(', ')}`);
         return;
       }
 
-      // Nếu đủ thì cập nhật trạng thái
-      const newStatus = 'Đã duyệt';
+      if (loiKhongDuHanHopLe.length > 0) {
+        alert(`⚠ Không đủ số lượng hợp lệ (hết hạn một phần): \n${loiKhongDuHanHopLe.join('\n')}`);
+        return;
+      }
 
+      if (loiKhongDuTong.length > 0) {
+        alert(`⚠ Tồn kho không đủ để xuất (dù có thể còn hạn): \n${loiKhongDuTong.join('\n')}`);
+        return;
+      }
+
+      // ✅ Tất cả hợp lệ → cập nhật trạng thái
+      const newStatus = 'Đã duyệt';
       this.http.put(`http://localhost:3000/api/phieu-xuat/${this.selectedPhieu.id}/admin-cap-nhat`, {
         trang_thai: newStatus,
         note_admin: this.phanHoiHeThong,
@@ -125,23 +154,18 @@ export class DuyetphieuxuatComponent implements OnInit {
         admin_account_name: this.adminName
       }).subscribe(() => {
         alert('✅ Kiểm tra hoàn tất! Trạng thái đã cập nhật sang "Đã duyệt". Bạn có thể xuất hàng.');
-
-        // ✅ Cập nhật thông tin hiển thị
         this.selectedPhieu.trang_thai = newStatus;
         this.selectedPhieu.note_admin = this.phanHoiHeThong;
         this.selectedPhieu.admin_account_email = this.adminEmail;
         this.selectedPhieu.admin_account_name = this.adminName;
-
-        // ✅ Tự động đóng popup
         this.popupNhapKhoMo = false;
       });
+
     }).catch(err => {
       console.error('❌ Lỗi kiểm tra số lượng sản phẩm:', err);
       alert('❌ Lỗi khi kiểm tra số lượng sản phẩm.');
     });
   }
-
-
 
   capNhatThanhTien(sp: any) {
     const unitPrice = Number(sp.unit_price) || 0;
